@@ -9,27 +9,54 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\cJSON">
+      <UniqueIdentifier>{9706627d-7bed-4fdf-b74e-7a33b683b799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\BinPackers">
+      <UniqueIdentifier>{03ac5063-6c03-4bd0-b7d0-0afbf9fd5aa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lodepng">
+      <UniqueIdentifier>{0fa696be-9cbb-4dd2-893c-4cdd05df822d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\CommonHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\lodepng.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\SpriteTool.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\cJSON\cJSON.cpp">
+      <Filter>Source Files\cJSON</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.cpp">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\lodepng\lodepng.cpp">
+      <Filter>Source Files\lodepng</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CommonHeader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\lodepng.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\SpriteTool.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\cJSON\cJSON.h">
+      <Filter>Source Files\cJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BinPackers\MaxRectsBinPack.h">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.h">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\lodepng\lodepng.h">
+      <Filter>Source Files\lodepng</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
