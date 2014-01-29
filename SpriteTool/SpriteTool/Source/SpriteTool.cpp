@@ -28,7 +28,7 @@ int main(int argc, const char* argv[])
             else
                 setting_padding = atoi( argv[i+1] );
         }
-        if( ( strcmp( argv[i], "-d" ) == 0 || strcmp( argv[i], "-dirsrc" ) == 0 ) )
+        if( ( strcmp( argv[i], "-t" ) == 0 || strcmp( argv[i], "-trim" ) == 0 ) )
         {
             setting_trim = true;
 
@@ -124,12 +124,15 @@ using namespace boost::filesystem;
 
             int len = strlen(filenamecstr);
             pImages[filecount].filename = new char[len+1];
-            strcpy( pImages[filecount].filename, filenamecstr );
+            strcpy_s( pImages[filecount].filename, len+1, filenamecstr );
             lodepng_decode32_file( &pImages[filecount].imagebuffer, &pImages[filecount].w, &pImages[filecount].h, relativepathcstr );
 
             filecount++;
         }
     }
+
+    // triangulate the sprites, this will also trim them.
+    TriangulateSprites( pImages, filecount );
 
     // try to fit them into texture
     bool done = false;
@@ -205,14 +208,12 @@ using namespace boost::filesystem;
 
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh)
 {
-using namespace rbp;
-
-    MaxRectsBinPack m_BinPack;
+    rbp::MaxRectsBinPack m_BinPack;
     m_BinPack.Init( texw, texh );
 
     for( int i=0; i<filecount; i++ )
     {
-        pImages[i].binrect = m_BinPack.Insert( pImages[i].w, pImages[i].h, MaxRectsBinPack::RectContactPointRule );
+        pImages[i].binrect = m_BinPack.Insert( pImages[i].w, pImages[i].h, rbp::MaxRectsBinPack::RectContactPointRule );
         //float occupancy = m_BinPack.Occupancy();
 
         if( pImages[i].binrect.width == 0 )
@@ -236,8 +237,6 @@ using namespace rbp;
 
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src)
 {
-using namespace rbp;
-
     for( int y=0; y<src->binrect.height; y++ )
     {
         for( int x=0; x<src->binrect.width; x++ )
@@ -247,5 +246,84 @@ using namespace rbp;
 
             ((int*)dest)[destoffset] = ((int*)src->imagebuffer)[srcoffset];
         }
+    }
+}
+
+void TriangulateSprites(ImageBlock* pImages, int filecount)
+{
+    for( int i=0; i<filecount; i++ )
+    {
+        unsigned int w = pImages[i].w;
+        unsigned int h = pImages[i].h;
+        unsigned char* pPixels = pImages[i].imagebuffer;
+
+        // find edges of sprite
+        std::list<vec2> pPoints;
+        MarchingSquares march;
+        march.DoMarch( pPixels, w, h, &pPoints );
+
+        // add them to a vector of points for poly2tri.
+        std::vector<p2t::Point*> polyline;
+
+        std::list<vec2>::iterator p;
+        p2t::Point prevpoint(-1, -1), prevprevpoint(-1, -1);
+        for( p = pPoints.begin(); p != pPoints.end(); p++ )
+        {
+            p2t::Point currpoint( p->x, p->y );
+
+            if( prevpoint.x != -1 )
+            {
+                if( prevprevpoint.x == -1 )
+                {
+                    printf( "Adding first point - (%f, %f)\n", prevpoint.x, prevpoint.y );
+                    polyline.push_back( new p2t::Point( prevpoint ) );
+                }
+                else
+                {
+                    if( ( currpoint.x == prevpoint.x && currpoint.x == prevprevpoint.x ) ||
+                        ( currpoint.y == prevpoint.y && currpoint.y == prevprevpoint.y ) )
+                    {
+                    }
+                    else
+                    {
+                        printf( "Adding point       - (%f, %f)\n", prevpoint.x, prevpoint.y );
+                        polyline.push_back( new p2t::Point( prevpoint ) );
+                    }
+                }
+            }
+
+            prevprevpoint = prevpoint;
+            prevpoint = currpoint;
+        }
+
+        printf( "Adding last point  - (%f, %f)\n", prevpoint.x, prevpoint.y );
+        polyline.push_back( new p2t::Point( prevpoint ) );
+
+        // triangulate
+        p2t::CDT* cdt = new p2t::CDT( polyline );
+
+        cdt->Triangulate();
+
+        std::vector<p2t::Triangle*> triangles = cdt->GetTriangles();
+
+        //std::list<p2t::Triangle*> map = cdt->GetMap();
+
+        printf( "Number of triangles: %d\n", triangles.size() );
+
+        for( unsigned int i=0; i<triangles.size(); i++ )
+        {
+            p2t::Point* point0 = triangles[i]->GetPoint( 0 );
+            p2t::Point* point1 = triangles[i]->GetPoint( 1 );
+            p2t::Point* point2 = triangles[i]->GetPoint( 2 );
+            printf( "triangles %d: (%0.2f,%0.2f), (%0.2f,%0.2f), (%0.2f,%0.2f)\n",
+                     i, point0->x, point0->y, point1->x, point1->y, point2->x, point2->y );
+        }
+
+        // Cleanup
+        delete cdt;
+        for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
+            delete *p;
+
+        polyline.clear();
     }
 }

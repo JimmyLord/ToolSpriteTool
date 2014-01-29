@@ -17,5 +17,6 @@ struct ImageBlock
 bool CreateSpriteSheet(const char* srcdir, int padding, int trim);
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);
+void TriangulateSprites(ImageBlock* pImages, int filecount);
 
 #endif //__SPRITETOOL_H__

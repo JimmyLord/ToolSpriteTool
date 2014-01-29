@@ -18,6 +18,15 @@
     <Filter Include="Source Files\lodepng">
       <UniqueIdentifier>{0fa696be-9cbb-4dd2-893c-4cdd05df822d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\poly2tri">
+      <UniqueIdentifier>{8f1839cc-de8b-4f7d-b65e-69e931868380}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\poly2tri\common">
+      <UniqueIdentifier>{fbe15520-fbaa-4d6a-b9cd-86926869bc78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\poly2tri\sweep">
+      <UniqueIdentifier>{54814b67-31f5-4901-b6d5-e4a98e60b504}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\CommonHeader.cpp">
@@ -32,11 +41,26 @@
     <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
       <Filter>Source Files\BinPackers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.cpp">
-      <Filter>Source Files\BinPackers</Filter>
-    </ClCompile>
     <ClCompile Include="Source\lodepng\lodepng.cpp">
       <Filter>Source Files\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\common\shapes.cc">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\advancing_front.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\cdt.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep_context.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BinPackers\Rect.cpp">
+      <Filter>Source Files\BinPackers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,11 +76,35 @@
     <ClInclude Include="Source\BinPackers\MaxRectsBinPack.h">
       <Filter>Source Files\BinPackers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.h">
-      <Filter>Source Files\BinPackers</Filter>
-    </ClInclude>
     <ClInclude Include="Source\lodepng\lodepng.h">
       <Filter>Source Files\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\poly2tri.h">
+      <Filter>Source Files\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\common\shapes.h">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\common\utils.h">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\advancing_front.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\cdt.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\sweep.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\sweep_context.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BinPackers\Rect.h">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MarchingSquares.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

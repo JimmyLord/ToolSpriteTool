@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.cpp">
+    <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
+    <ClCompile Include="Source\BinPackers\Rect.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\cJSON\cJSON.cpp">
@@ -27,14 +27,37 @@
     <ClCompile Include="Source\lodepng\lodepng.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClInclude Include="Source\MarchingSquares.h" />
+    <ClCompile Include="Source\poly2tri\common\shapes.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\advancing_front.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\cdt.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep_context.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Source\SpriteTool.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\AppData\Desktop\RectangleBinPack-master\RectangleBinPack-master\Rect.h" />
     <ClInclude Include="Source\BinPackers\MaxRectsBinPack.h" />
+    <ClInclude Include="Source\BinPackers\Rect.h" />
     <ClInclude Include="Source\cJSON\cJSON.h" />
     <ClInclude Include="Source\CommonHeader.h" />
     <ClInclude Include="Source\lodepng\lodepng.h" />
+    <ClInclude Include="Source\poly2tri\common\shapes.h" />
+    <ClInclude Include="Source\poly2tri\common\utils.h" />
+    <ClInclude Include="Source\poly2tri\poly2tri.h" />
+    <ClInclude Include="Source\poly2tri\sweep\advancing_front.h" />
+    <ClInclude Include="Source\poly2tri\sweep\cdt.h" />
+    <ClInclude Include="Source\poly2tri\sweep\sweep.h" />
+    <ClInclude Include="Source\poly2tri\sweep\sweep_context.h" />
     <ClInclude Include="Source\SpriteTool.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
