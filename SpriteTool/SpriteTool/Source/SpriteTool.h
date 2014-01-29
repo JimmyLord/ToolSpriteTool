@@ -14,6 +14,7 @@ struct ImageBlock
     rbp::Rect binrect;
 };
 
+int main(int argc, char** argv);
 bool CreateSpriteSheet(const char* srcdir, int padding, int trim);
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);

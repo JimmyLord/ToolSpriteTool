@@ -1,7 +1,19 @@
 #ifndef __COMMONHEADER_H__
 #define __COMMONHEADER_H__
 
+#if SPRITETOOLGUI
+
+#include <windows.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+#include "GL/GLExtensions.h"
+#include "GameCore.h"
+
+#else
+
 #include <SDKDDKVer.h>
+
+#endif
 
 #include <stdio.h>
 #include <tchar.h>
@@ -10,6 +22,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <list>
+#include <assert.h>
 
 #include <boost/filesystem.hpp>
 

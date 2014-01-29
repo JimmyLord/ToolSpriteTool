@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\BinPackers">
+      <UniqueIdentifier>{c52bd81b-acc9-4385-b090-75419544f618}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cJSON">
+      <UniqueIdentifier>{8acaf4c5-1faa-49a3-be60-8dfdfad3f909}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lodepng">
+      <UniqueIdentifier>{0b462d0c-999e-4ecb-a8e2-4204ac459669}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\poly2tri">
+      <UniqueIdentifier>{9a87f28b-14b3-4e20-b733-2c142abd6b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\poly2tri\common">
+      <UniqueIdentifier>{926ee944-6f06-4c5b-b388-f50851bf334a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\poly2tri\sweep">
+      <UniqueIdentifier>{279264c2-ac25-463d-9d69-ca31a38b6974}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GL">
+      <UniqueIdentifier>{5a4fd89a-e3d2-4b39-af03-2d6706c7c7fb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\BinPackers\Rect.cpp">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\cJSON\cJSON.cpp">
+      <Filter>Source Files\cJSON</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\lodepng\lodepng.cpp">
+      <Filter>Source Files\lodepng</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\common\shapes.cc">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\advancing_front.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\cdt.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\poly2tri\sweep\sweep_context.cc">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CommonHeader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SpriteTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GL\GLExtensions.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\BinPackers\MaxRectsBinPack.h">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BinPackers\Rect.h">
+      <Filter>Source Files\BinPackers</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SpriteTool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\cJSON\cJSON.h">
+      <Filter>Source Files\cJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\lodepng\lodepng.h">
+      <Filter>Source Files\lodepng</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\poly2tri.h">
+      <Filter>Source Files\poly2tri</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\common\shapes.h">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\common\utils.h">
+      <Filter>Source Files\poly2tri\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\advancing_front.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\cdt.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\sweep.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\poly2tri\sweep\sweep_context.h">
+      <Filter>Source Files\poly2tri\sweep</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CommonHeader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MarchingSquares.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GL\glext.h">
+      <Filter>Source Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GL\GLExtensions.h">
+      <Filter>Source Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GL\wglext.h">
+      <Filter>Source Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameCore.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
