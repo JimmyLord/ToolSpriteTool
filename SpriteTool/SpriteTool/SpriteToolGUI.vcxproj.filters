@@ -30,6 +30,9 @@
     <Filter Include="Source Files\GL">
       <UniqueIdentifier>{5a4fd89a-e3d2-4b39-af03-2d6706c7c7fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\MarchingSquares">
+      <UniqueIdentifier>{82c9846c-7795-4cee-8788-4d5e9de3841b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\BinPackers\MaxRectsBinPack.cpp">
@@ -74,6 +77,9 @@
     <ClCompile Include="Source\GameCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\BinPackers\MaxRectsBinPack.h">
@@ -115,9 +121,6 @@
     <ClInclude Include="Source\CommonHeader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\MarchingSquares.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\GL\glext.h">
       <Filter>Source Files\GL</Filter>
     </ClInclude>
@@ -128,6 +131,12 @@
       <Filter>Source Files\GL</Filter>
     </ClInclude>
     <ClInclude Include="Source\GameCore.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MarchingSquares\MarchingSquares.h">
+      <Filter>Source Files\MarchingSquares</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ShaderProgram.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

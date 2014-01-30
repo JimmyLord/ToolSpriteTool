@@ -2,6 +2,12 @@
 
 int main(int argc, char** argv)
 {
+    ImageBlockInfo* pImageInfo = SpriteTool_ParseArgsAndCreateSpriteSheet(argc, argv);
+    delete pImageInfo;
+}
+
+ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
+{
     bool invalidargs = false;
 
     if( argc < 2 )
@@ -11,6 +17,9 @@ int main(int argc, char** argv)
     int setting_padding = 0;
     bool setting_trim = false;
     int setting_trimalpha = 0;
+
+    ImageBlockInfo* pImageInfo = 0;
+    ImageBlock* pImages = 0;
 
     for( int i=1; i<argc; i++ )
     {
@@ -69,17 +78,17 @@ int main(int argc, char** argv)
         else
             printf( "Trim Disabled\n" );
 
-        CreateSpriteSheet( setting_dirscr, setting_padding, setting_trim ? setting_trimalpha:-1 );
+        pImageInfo = CreateSpriteSheet( setting_dirscr, setting_padding, setting_trim ? setting_trimalpha:-1 );
 
         printf( "done\n" );
     }
 
     _getch();
 
-	return 0;
+	return pImageInfo;
 }
 
-bool CreateSpriteSheet(const char* srcdir, int padding, int trim)
+ImageBlockInfo* CreateSpriteSheet(const char* srcdir, int padding, int trim)
 {
 using namespace rbp;
 using namespace boost::filesystem;
@@ -87,7 +96,7 @@ using namespace boost::filesystem;
     path srcpath( srcdir );
 
     if( exists( srcpath ) == false )
-        return false;
+        return 0;
 
     recursive_directory_iterator end_itr; // default construction yields past-the-end
 
@@ -101,9 +110,11 @@ using namespace boost::filesystem;
     }
 
     if( filecount == 0 )
-        return false;
+        return 0;
 
-    ImageBlock* pImages = new ImageBlock[filecount];
+    ImageBlockInfo* pImageInfo = new ImageBlockInfo;
+    pImageInfo->pImages = new ImageBlock[filecount];
+    pImageInfo->NumImages = filecount;
 
     unsigned int highestx = 0;
     unsigned int highesty = 0;
@@ -123,16 +134,18 @@ using namespace boost::filesystem;
             const char* filenamecstr = filenamestr.c_str();
 
             int len = strlen(filenamecstr);
-            pImages[filecount].filename = new char[len+1];
-            strcpy_s( pImages[filecount].filename, len+1, filenamecstr );
-            lodepng_decode32_file( &pImages[filecount].imagebuffer, &pImages[filecount].w, &pImages[filecount].h, relativepathcstr );
+            pImageInfo->pImages[filecount].filename = new char[len+1];
+            strcpy_s( pImageInfo->pImages[filecount].filename, len+1, filenamecstr );
+            lodepng_decode32_file( &pImageInfo->pImages[filecount].imagebuffer,
+                                   &pImageInfo->pImages[filecount].w, &pImageInfo->pImages[filecount].h,
+                                   relativepathcstr );
 
             filecount++;
         }
     }
 
     // triangulate the sprites, this will also trim them.
-    TriangulateSprites( pImages, filecount );
+    TriangulateSprites( pImageInfo->pImages, filecount );
 
     // try to fit them into texture
     bool done = false;
@@ -140,7 +153,7 @@ using namespace boost::filesystem;
     int sizey = 64;
     while( done == false )
     {
-        done = PackTextures( pImages, filecount, sizex, sizey );
+        done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey );
 
         if( done == false )
             sizex *= 2;
@@ -165,7 +178,7 @@ using namespace boost::filesystem;
 
         for( int i=0; i<filecount; i++ )
         {
-            CopyImageChunk( pNewImage, sizex, sizey, &pImages[i] );
+            CopyImageChunk( pNewImage, sizex, sizey, &pImageInfo->pImages[i] );
         }
 
         lodepng_encode32_file( "test.png", pNewImage, sizex, sizey );
@@ -180,17 +193,17 @@ using namespace boost::filesystem;
         if( done == true )
         {
             cJSON* fileobj = cJSON_CreateObject();
-            cJSON_AddStringToObject( fileobj, "filename", pImages[i].filename );
-            cJSON_AddNumberToObject( fileobj, "origwidth", pImages[i].w );
-            cJSON_AddNumberToObject( fileobj, "origheight", pImages[i].h );
-            cJSON_AddNumberToObject( fileobj, "posx", pImages[i].posx );
-            cJSON_AddNumberToObject( fileobj, "posy", pImages[i].posy );
+            cJSON_AddStringToObject( fileobj, "filename", pImageInfo->pImages[i].filename );
+            cJSON_AddNumberToObject( fileobj, "origwidth", pImageInfo->pImages[i].w );
+            cJSON_AddNumberToObject( fileobj, "origheight", pImageInfo->pImages[i].h );
+            cJSON_AddNumberToObject( fileobj, "posx", pImageInfo->pImages[i].posx );
+            cJSON_AddNumberToObject( fileobj, "posy", pImageInfo->pImages[i].posy );
             cJSON_AddItemToArray( filearray, fileobj );
         }
 
         // free memory
-        free( pImages[i].imagebuffer );
-        delete[] pImages[i].filename;
+        //free( pImages[i].imagebuffer );
+        //delete[] pImages[i].filename;
     }
 
     char* jsonstr = cJSON_Print( root );
@@ -201,9 +214,9 @@ using namespace boost::filesystem;
     cJSON_Delete( root );
 
     delete[] pNewImage;
-    delete[] pImages;
+    //delete[] pImages;
 
-    return true;
+    return pImageInfo;
 }
 
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh)
@@ -310,19 +323,20 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
 
         printf( "Number of triangles: %d\n", triangles.size() );
 
-        for( unsigned int i=0; i<triangles.size(); i++ )
+        for( unsigned int t=0; t<triangles.size(); t++ )
         {
-            p2t::Point* point0 = triangles[i]->GetPoint( 0 );
-            p2t::Point* point1 = triangles[i]->GetPoint( 1 );
-            p2t::Point* point2 = triangles[i]->GetPoint( 2 );
+            p2t::Point* point0 = triangles[t]->GetPoint( 0 );
+            p2t::Point* point1 = triangles[t]->GetPoint( 1 );
+            p2t::Point* point2 = triangles[t]->GetPoint( 2 );
             printf( "triangles %d: (%0.2f,%0.2f), (%0.2f,%0.2f), (%0.2f,%0.2f)\n",
-                     i, point0->x, point0->y, point1->x, point1->y, point2->x, point2->y );
+                     t, point0->x, point0->y, point1->x, point1->y, point2->x, point2->y );
         }
 
         // Cleanup
-        delete cdt;
-        for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
-            delete *p;
+        pImages[i].cdt = cdt;
+        //delete cdt;
+        //for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
+        //    delete *p;
 
         polyline.clear();
     }

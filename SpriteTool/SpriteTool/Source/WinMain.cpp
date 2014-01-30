@@ -11,6 +11,7 @@ HINSTANCE hInstance;
 int g_WindowWidth = 0;
 int g_WindowHeight = 0;
 bool g_KeyStates[256];
+bool g_KeyStatesOld[256];
 bool g_WindowIsActive = true;
 bool g_FullscreenMode = true;
 
@@ -297,7 +298,7 @@ double MyGetSystemTime()
 }
 
 // found here and modified: http://www.cmake.org/pipermail/cmake/2004-June/005170.html
-void ParseCommandLine(LPSTR lpCmdLine, int nCmdShow, char*** out_argv, int* out_argc)
+void ParseCommandLine(LPSTR lpCmdLine, int nCmdShow, int* out_argc, char*** out_argv)
 {
     int          argc; 
     //int          retVal; 
@@ -409,19 +410,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     char** argv = 0;
     int argc;
-    ParseCommandLine( lpCmdLine, nCmdShow, &argv, &argc );
-
-    main( argc, argv );
-
-    // Delete arguments 
-    for( int j=0; j<argc; j++ )
-    { 
-        free( argv[j] );
-    } 
-    free( argv );
+    ParseCommandLine( lpCmdLine, nCmdShow, &argc, &argv );
 
     for( int i=0; i<256; i++ )
+    {
         g_KeyStates[i] = false;
+        g_KeyStatesOld[i] = false;
+    }
 
     // Create Our OpenGL Window
     if( !CreateGLWindow( "OpenGL Window", SCREEN_WIDTH, SCREEN_HEIGHT, 32, 31, 1, false ) )
@@ -436,7 +431,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     GameCore* pGameCore = new GameCore;
     g_pGameCore = pGameCore;
 
-    pGameCore->OneTimeInit();
+    pGameCore->OneTimeInit( argc, argv );
     pGameCore->OnSurfaceChanged( SCREEN_WIDTH, SCREEN_HEIGHT );
 
     double lasttime = MyGetSystemTime();
@@ -473,6 +468,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                     pGameCore->Tick( timepassed );
                     pGameCore->OnDrawFrame();
 
+                    for( int i=0; i<256; i++ )
+                        g_KeyStatesOld[i] = g_KeyStates[i];
+
                     SwapBuffers( hDeviceContext );
                 }
             }
@@ -482,6 +480,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     delete( pGameCore );
 
     KillGLWindow();
+
+    // Delete arguments 
+    for( int j=0; j<argc; j++ )
+    { 
+        free( argv[j] );
+    } 
+    free( argv );
 
     return msg.wParam;
 }

@@ -7,7 +7,6 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "GL/GLExtensions.h"
-#include "GameCore.h"
 
 #else
 
@@ -26,18 +25,23 @@
 
 #include <boost/filesystem.hpp>
 
-#include "cJSON/cJSON.h"
-#include "lodepng/lodepng.h"
-#include "BinPackers/MaxRectsBinPack.h"
-#include "poly2tri/poly2tri.h"
-
 struct vec2
 {
     int x;
     int y;
 };
 
-#include "MarchingSquares.h"
+#include "BinPackers/MaxRectsBinPack.h"
+#include "cJSON/cJSON.h"
+#include "lodepng/lodepng.h"
+#include "MarchingSquares/MarchingSquares.h"
+#include "poly2tri/poly2tri.h"
+
 #include "SpriteTool.h"
+
+#if SPRITETOOLGUI
+#include "ShaderProgram.h"
+#include "GameCore.h"
+#endif
 
 #endif //__COMMONHEADER_H__

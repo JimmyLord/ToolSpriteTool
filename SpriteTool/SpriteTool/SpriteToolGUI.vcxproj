@@ -53,13 +53,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>SPRITETOOLGUI;WIN32;_DEBUG;_WINDOWS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Apps\boost_1_55_0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_PATH)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>CommonHeader.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\Apps\boost_1_55_0\lib32-msvc-10.0</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)\lib32-msvc-10.0</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -71,7 +71,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>SPRITETOOLGUI;WIN32;NDEBUG;_WINDOWS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\Apps\boost_1_55_0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_PATH)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>CommonHeader.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -79,7 +79,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>E:\Apps\boost_1_55_0\lib32-msvc-10.0</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)\lib32-msvc-10.0</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -126,6 +126,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\ShaderProgram.cpp" />
     <ClCompile Include="Source\SpriteTool.cpp" />
     <ClCompile Include="Source\WinMain.cpp" />
   </ItemGroup>
@@ -139,7 +140,7 @@
     <ClInclude Include="Source\GL\GLExtensions.h" />
     <ClInclude Include="Source\GL\wglext.h" />
     <ClInclude Include="Source\lodepng\lodepng.h" />
-    <ClInclude Include="Source\MarchingSquares.h" />
+    <ClInclude Include="Source\MarchingSquares\MarchingSquares.h" />
     <ClInclude Include="Source\poly2tri\common\shapes.h" />
     <ClInclude Include="Source\poly2tri\common\utils.h" />
     <ClInclude Include="Source\poly2tri\poly2tri.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="Source\poly2tri\sweep\cdt.h" />
     <ClInclude Include="Source\poly2tri\sweep\sweep.h" />
     <ClInclude Include="Source\poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="Source\ShaderProgram.h" />
     <ClInclude Include="Source\SpriteTool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

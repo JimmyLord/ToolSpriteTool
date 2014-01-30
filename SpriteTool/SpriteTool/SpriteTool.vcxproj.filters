@@ -27,6 +27,9 @@
     <Filter Include="Source Files\poly2tri\sweep">
       <UniqueIdentifier>{54814b67-31f5-4901-b6d5-e4a98e60b504}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\MarchingSquares">
+      <UniqueIdentifier>{d3626e3c-076a-4edf-8f8a-ac7ae33ae9d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\CommonHeader.cpp">
@@ -103,8 +106,8 @@
     <ClInclude Include="Source\BinPackers\Rect.h">
       <Filter>Source Files\BinPackers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\MarchingSquares.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="Source\MarchingSquares\MarchingSquares.h">
+      <Filter>Source Files\MarchingSquares</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
