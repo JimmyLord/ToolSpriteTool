@@ -24,6 +24,9 @@ void GameCore::OneTimeInit(int argc, char** argv)
 {
     m_pImageInfo = SpriteTool_ParseArgsAndCreateSpriteSheet( argc, argv );
 
+    if( m_pImageInfo == 0 )
+        return;
+
     m_pTextureShader = new ShaderProgram;
     m_pTextureShader->InitFromString(
 "attribute vec2 a_Position; \
@@ -46,7 +49,7 @@ void main() \
 
     glGenBuffers( 1, &m_QuadVBO );
     glBindBuffer( GL_ARRAY_BUFFER, m_QuadVBO );
-    float quadverts[6*2*2] =
+    float quadverts[6*4] =
     {
         -1,  0.5f, 0, 0,
         -1, -0.5f, 0, 1,
@@ -55,9 +58,9 @@ void main() \
         -1, -0.5f, 0, 1,
          0, -0.5f, 1, 1,
     };
-    glBufferData( GL_ARRAY_BUFFER, 6*2*2*4, quadverts, GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, 6*4*sizeof(float), quadverts, GL_STATIC_DRAW );
 
-    for( int i=0; i<m_pImageInfo->NumImages; i++ )
+    for( unsigned int i=0; i<m_pImageInfo->NumImages; i++ )
     {
         glGenTextures( 1, &m_pImageInfo->pImages[i].texturehandle );
         glGenBuffers( 1, &m_pImageInfo->pImages[i].vbo );
@@ -70,38 +73,64 @@ void main() \
 
         glBindBuffer( GL_ARRAY_BUFFER, m_pImageInfo->pImages[i].vbo );
 
-        std::vector<p2t::Triangle*> triangles = m_pImageInfo->pImages[i].cdt->GetTriangles();
-        unsigned int numtris = triangles.size();
-        m_pImageInfo->pImages[i].numtris = numtris;
-        float* verts = new float[numtris*3*4];
-
-        for( unsigned int t=0; t<numtris; t++ )
+        if( m_pImageInfo->pImages[i].cdt )
         {
-            p2t::Point* point0 = triangles[t]->GetPoint( 0 );
-            p2t::Point* point1 = triangles[t]->GetPoint( 1 );
-            p2t::Point* point2 = triangles[t]->GetPoint( 2 );
+            std::vector<p2t::Triangle*> triangles = m_pImageInfo->pImages[i].cdt->GetTriangles();
+            unsigned int numtris = triangles.size();
+            m_pImageInfo->pImages[i].numtris = numtris;
+            float* verts = new float[numtris*3*4];
 
-            verts[t*3*4 + 0*4 + 0] = point0->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 0*4 + 1] = -point0->y / (float)m_pImageInfo->pImages[i].h + 0.5f;
-            verts[t*3*4 + 0*4 + 2] = point0->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 0*4 + 3] = point0->y / (float)m_pImageInfo->pImages[i].h;
+            for( unsigned int t=0; t<numtris; t++ )
+            {
+                p2t::Point* point0 = triangles[t]->GetPoint( 0 );
+                p2t::Point* point1 = triangles[t]->GetPoint( 1 );
+                p2t::Point* point2 = triangles[t]->GetPoint( 2 );
 
-            verts[t*3*4 + 1*4 + 0] = point2->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 1*4 + 1] = -point2->y / (float)m_pImageInfo->pImages[i].h + 0.5f;
-            verts[t*3*4 + 1*4 + 2] = point2->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 1*4 + 3] = point2->y / (float)m_pImageInfo->pImages[i].h;
+                verts[t*3*4 + 0*4 + 0] = (float)( point0->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 0*4 + 1] = (float)( -point0->y / (float)m_pImageInfo->pImages[i].h + 0.5f );
+                verts[t*3*4 + 0*4 + 2] = (float)( point0->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 0*4 + 3] = (float)( point0->y / (float)m_pImageInfo->pImages[i].h );
 
-            verts[t*3*4 + 2*4 + 0] = point1->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 2*4 + 1] = -point1->y / (float)m_pImageInfo->pImages[i].h + 0.5f;
-            verts[t*3*4 + 2*4 + 2] = point1->x / (float)m_pImageInfo->pImages[i].w;
-            verts[t*3*4 + 2*4 + 3] = point1->y / (float)m_pImageInfo->pImages[i].h;
+                verts[t*3*4 + 1*4 + 0] = (float)( point2->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 1*4 + 1] = (float)( -point2->y / (float)m_pImageInfo->pImages[i].h + 0.5f );
+                verts[t*3*4 + 1*4 + 2] = (float)( point2->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 1*4 + 3] = (float)( point2->y / (float)m_pImageInfo->pImages[i].h );
 
-            int bp = 1;
+                verts[t*3*4 + 2*4 + 0] = (float)( point1->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 2*4 + 1] = (float)( -point1->y / (float)m_pImageInfo->pImages[i].h + 0.5f );
+                verts[t*3*4 + 2*4 + 2] = (float)( point1->x / (float)m_pImageInfo->pImages[i].w );
+                verts[t*3*4 + 2*4 + 3] = (float)( point1->y / (float)m_pImageInfo->pImages[i].h );
+
+                int bp = 1;
+            }
+
+            glBufferData( GL_ARRAY_BUFFER, numtris*3*4*sizeof(float), verts, GL_STATIC_DRAW );
+    
+            delete verts;
         }
+        else
+        {
+            // make a smaller quad based on trimmed size.
+            m_pImageInfo->pImages[i].numtris = 2;
+            float x = (float)m_pImageInfo->pImages[i].trimmedx;
+            float y = (float)m_pImageInfo->pImages[i].trimmedy;
+            float w = (float)m_pImageInfo->pImages[i].trimmedw;
+            float h = (float)m_pImageInfo->pImages[i].trimmedh;
 
-        glBufferData( GL_ARRAY_BUFFER, numtris*3*4*sizeof(float), verts, GL_STATIC_DRAW );
+            float origw = (float)m_pImageInfo->pImages[i].w;
+            float origh = (float)m_pImageInfo->pImages[i].h;
 
-        delete verts;
+            float quadverts[6*4] =
+            {
+                 0 + x/origw,      0.5f - y/origh,      x/origw,     y/origh,     // top left
+                 0 + x/origw,      0.5f - (y+h)/origh,  x/origw,     (y+h)/origh, // bottom left
+                 0 + (x+w)/origw,  0.5f - y/origh,      (x+w)/origw, y/origh,     // top right
+                 0 + (x+w)/origw,  0.5f - y/origh,      (x+w)/origw, y/origh,     // top right
+                 0 + x/origw,      0.5f - (y+h)/origh,  x/origw,     (y+h)/origh, // bottom left
+                 0 + (x+w)/origw,  0.5f - (y+h)/origh,  (x+w)/origw, (y+h)/origh, // bottom right
+            };
+            glBufferData( GL_ARRAY_BUFFER, 6*4*sizeof(float), quadverts, GL_STATIC_DRAW );
+        }
     }
 }
 
@@ -123,7 +152,7 @@ void GameCore::Tick(double TimePassed)
 
     if( g_KeyStates[VK_RIGHT] == true && g_KeyStatesOld[VK_RIGHT] == false )
     {
-        if( m_CurrentTexture < m_pImageInfo->NumImages-1 )
+        if( m_pImageInfo->NumImages != 0 && m_CurrentTexture < m_pImageInfo->NumImages-1 )
             m_CurrentTexture++;
     }
 

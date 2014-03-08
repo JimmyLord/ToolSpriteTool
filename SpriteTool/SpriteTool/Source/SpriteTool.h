@@ -8,12 +8,14 @@ class ImageBlock
 public:
     char* filename;
     unsigned char* imagebuffer;
-    unsigned int w;
+    unsigned int w; // original width and height
     unsigned int h;
-    unsigned int posx;
+    unsigned int posx; // position in final spritesheet texture
     unsigned int posy;
-    unsigned int offsetx; // how much was trimmed
-    unsigned int offsety; // how much was trimmed
+    unsigned int trimmedx; // start x and y after trim
+    unsigned int trimmedy;
+    unsigned int trimmedw; // width and height after trimming
+    unsigned int trimmedh;
     rbp::Rect binrect;
     p2t::CDT* cdt;
 
@@ -27,6 +29,16 @@ public:
     {
         filename = 0;
         imagebuffer = 0;
+
+        w = 0;
+        h = 0;
+        posx = 0;
+        posy = 0;
+        trimmedx = 0;
+        trimmedy = 0;
+        trimmedw = 0;
+        trimmedh = 0;
+
         cdt = 0;
 
 #if SPRITETOOLGUI
@@ -56,7 +68,7 @@ class ImageBlockInfo
 {
 public:
     ImageBlock* pImages;
-    int NumImages;
+    unsigned int NumImages;
 
     ImageBlockInfo()
     {
@@ -70,9 +82,10 @@ public:
 
 int main(int argc, char** argv);
 ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv);
-ImageBlockInfo* CreateSpriteSheet(const char* srcdir, int padding, int trim);
-bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh);
+ImageBlockInfo* CreateSpriteSheet(const char* srcdir, const char* filename, int padding, int trim, bool triangulate);
+bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);
 void TriangulateSprites(ImageBlock* pImages, int filecount);
+void TrimSprites(ImageBlock* pImages, int filecount, int trim);
 
 #endif //__SPRITETOOL_H__

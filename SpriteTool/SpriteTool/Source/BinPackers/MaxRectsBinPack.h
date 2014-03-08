@@ -18,6 +18,9 @@ namespace rbp {
 class MaxRectsBinPack
 {
 public:
+    bool MyHack_AllowRotation; //Jimmy: my hack to let code disable rotating sprites when packing.
+
+public:
 	/// Instantiates a bin of size (0,0). Call Init to create a new bin.
 	MaxRectsBinPack();
 
