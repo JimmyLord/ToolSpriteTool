@@ -13,12 +13,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
     if( argc < 2 )
         invalidargs = true;
 
-    const char* setting_dirscr = 0;
-    const char* setting_filename = 0;
-    int setting_padding = 0;
-    bool setting_trim = false;
-    int setting_trimalpha = 0;
-    bool setting_triangulate = false;
+    SettingsStruct settings;
 
     ImageBlockInfo* pImageInfo = 0;
     ImageBlock* pImages = 0;
@@ -30,94 +25,117 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             if( i+1 >= argc )
                 invalidargs = true;
             else
-                setting_dirscr = argv[i+1];
+                settings.dirscr = argv[i+1];
         }
-        if( ( strcmp( argv[i], "-f" ) == 0 || strcmp( argv[i], "-filename" ) == 0 ) )
+        if( ( strcmp( argv[i], "-o" ) == 0 || strcmp( argv[i], "-output" ) == 0 ) )
         {
             if( i+1 >= argc )
                 invalidargs = true;
             else
-                setting_filename = argv[i+1];
+                settings.outputfilename = argv[i+1];
         }
         if( ( strcmp( argv[i], "-p" ) == 0 || strcmp( argv[i], "-padding" ) == 0 ) )
         {
             if( i+1 >= argc )
                 invalidargs = true;
             else
-                setting_padding = atoi( argv[i+1] );
+                settings.padding = atoi( argv[i+1] );
         }
         if( ( strcmp( argv[i], "-t" ) == 0 || strcmp( argv[i], "-trim" ) == 0 ) )
         {
-            setting_trim = true;
+            settings.trim = true;
 
             if( i+1 >= argc )
                 invalidargs = true;
             else
-                setting_trimalpha = atoi( argv[i+1] );
+                settings.trimalpha = atoi( argv[i+1] );
         }
         if( ( strcmp( argv[i], "-tri" ) == 0 || strcmp( argv[i], "-triangulate" ) == 0 ) )
         {
-            setting_triangulate = true;
+            settings.triangulate = true;
+        }
+        if( ( strcmp( argv[i], "-s" ) == 0 || strcmp( argv[i], "-strip" ) == 0 ) )
+        {
+            settings.createstrip = true;
+        }
+        if( ( strcmp( argv[i], "-m" ) == 0 || strcmp( argv[i], "-max" ) == 0 ) )
+        {
+            if( i+1 >= argc )
+                invalidargs = true;
+            else
+                settings.maxtexturesize = atoi( argv[i+1] );
         }
     }
     
-    if( setting_dirscr == 0 )
-    {
-        printf( "Source directory required - use -d\n" );
-    }
-    else if( setting_filename == 0 )
-    {
-        printf( "Filename required - use -f\n" );
-    }
-    else if( setting_padding < 0 || setting_padding > 10 )
-    {
-        printf( "Invalid padding amount - must be value between 0 and 10\n" );
-    }
-    else if( setting_trim && (setting_trimalpha < 0 || setting_trimalpha > 255) )
-    {
-        printf( "Invalid trim alpha threshhold- must be value between 0 and 255\n" );
-    }
-    else if( invalidargs )
+    if( invalidargs )
     {
         printf( "Invalid arguments\n" );
         printf( "\n" );
         printf( "[-d imagedir] or -dirscr = supply a relative or absolute path\n" );
-        printf( "[-f filename] or -filename = output filename\n" );
+        printf( "[-o output filename] or -output = output filename\n" );
         printf( "[-p pixels] or -padding = padding between sprites in pixels\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - generally 0\n" );
         printf( "[-tri] or -triangulate = triangulate the sprites(WIP)\n" );
+        printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
+        printf( "[-m] or -max = maximum output texture size - default is 2048\n" );
+    }
+    else if( settings.dirscr == 0 )
+    {
+        printf( "Source directory required - use -d\n" );
+    }
+    else if( settings.outputfilename == 0 )
+    {
+        printf( "Output filename required - use -o\n" );
+    }
+    else if( settings.padding < 0 || settings.padding > 10 )
+    {
+        printf( "Invalid padding amount - must be value between 0 and 10\n" );
+    }
+    else if( settings.trim && (settings.trimalpha < 0 || settings.trimalpha > 255) )
+    {
+        printf( "Invalid trim alpha threshhold- must be value between 0 and 255\n" );
     }
     else
     {
         printf( "Starting\n" );
-        printf( "Source image directory -> %s\n", setting_dirscr );
-        printf( "Output filename -> %s\n", setting_filename );
-        printf( "Padding -> %d\n", setting_padding );
-        if( setting_trim )
-            printf( "Trim Enabled -> %d\n", setting_trimalpha );
+        printf( "Source image directory -> %s\n", settings.dirscr );
+        printf( "Output filename -> %s\n", settings.outputfilename );
+        if( settings.createstrip )
+        {
+            printf( "Create strip -> %d - disabling padding, trim and triangulate\n", settings.createstrip );
+            settings.padding = 0;
+            settings.trim = false;
+            settings.triangulate = false;
+        }
+        printf( "Max texture size -> %d\n", settings.maxtexturesize );
+        printf( "Padding -> %d\n", settings.padding );
+        if( settings.trim )
+            printf( "Trim -> Enabled -> %d\n", settings.trimalpha );
         else
-            printf( "Trim Disabled\n" );
-        if( setting_triangulate )
-            printf( "Triangulate Enabled\n" );
+            printf( "Trim -> Disabled\n" );
+        if( settings.triangulate )
+            printf( "Triangulate -> Enabled\n" );
         else
-            printf( "Triangulate Disabled\n" );
+            printf( "Triangulate -> Disabled\n" );        
 
-        pImageInfo = CreateSpriteSheet( setting_dirscr, setting_filename, setting_padding, setting_trim ? setting_trimalpha:-1, setting_triangulate );
+        pImageInfo = CreateSpriteSheet( settings );
 
         printf( "done\n" );
     }
 
+#if _DEBUG
     _getch();
+#endif
 
 	return pImageInfo;
 }
 
-ImageBlockInfo* CreateSpriteSheet(const char* srcdir, const char* filename, int padding, int trim, bool triangulate)
+ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
 {
 using namespace rbp;
 using namespace boost::filesystem;
 
-    path srcpath( srcdir );
+    path srcpath( settings.dirscr );
 
     if( exists( srcpath ) == false )
         return 0;
@@ -169,28 +187,43 @@ using namespace boost::filesystem;
     }
 
     // triangulate the sprites, this will also trim them.
-    if( triangulate )
+    if( settings.triangulate )
         TriangulateSprites( pImageInfo->pImages, filecount );
     else
-        TrimSprites( pImageInfo->pImages, filecount, trim );
+        TrimSprites( pImageInfo->pImages, filecount, settings.trim ? settings.trimalpha : -1 );
 
     // try to fit them into texture
     bool done = false;
-    int sizex = 64;
-    int sizey = 64;
+    unsigned int sizex = 64;
+    unsigned int sizey = 64;
     while( done == false )
     {
-        done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey, padding );
+        if( settings.createstrip )
+            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
+        else
+            done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
 
         if( done == false )
         {
-            if( sizex <= sizey )
+            if( settings.createstrip )
+            {
                 sizex *= 2;
+                if( sizex > settings.maxtexturesize )
+                {
+                    sizex = 64;
+                    sizey *= 2;
+                }
+            }
             else
-                sizey *= 2;
+            {
+                if( sizex <= sizey )
+                    sizex *= 2;
+                else
+                    sizey *= 2;
+            }
         }
 
-        if( sizex > 2048 && sizey > 2048 )
+        if( sizex > settings.maxtexturesize && sizey > settings.maxtexturesize )
             break;
     }
 
@@ -209,7 +242,7 @@ using namespace boost::filesystem;
         }
 
         char outputfile[260];//MAX_PATH];
-        sprintf_s( outputfile, 260, "%s.png", filename );
+        sprintf_s( outputfile, 260, "%s.png", settings.outputfilename );
         lodepng_encode32_file( outputfile, pNewImage, sizex, sizey );
 
 
@@ -248,7 +281,7 @@ using namespace boost::filesystem;
 
         //printf( "%s\n", jsonstr );
         char outputjsonfile[260];//MAX_PATH];
-        sprintf_s( outputjsonfile, 260, "%s.json", filename );
+        sprintf_s( outputjsonfile, 260, "%s.json", settings.outputfilename );
         FILE* file;
         fopen_s( &file, outputjsonfile, "w" );
         fprintf( file, jsonstr );
@@ -298,6 +331,42 @@ bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int pa
     return true;
 }
 
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding)
+{
+    unsigned int currx = 0;
+    unsigned int curry = 0;
+    unsigned int highesty = 0;
+
+    for( int i=0; i<filecount; i++ )
+    {
+        if( curry + pImages[i].h > (unsigned int)texh )
+        {
+            return false;
+        }
+
+        if( currx + pImages[i].w > (unsigned int)texw )
+        {
+            currx = 0;
+            curry += highesty;
+
+            if( curry > (unsigned int)texh )
+                return false;
+        }
+
+        {
+            pImages[i].posx = currx;
+            pImages[i].posy = curry;
+
+            currx += pImages[i].w;
+        
+            if( curry + pImages[i].h > highesty )
+                highesty = curry + pImages[i].h;
+        }
+    }
+
+    return true;
+}
+
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src)
 {
     unsigned int sourceoffsetx = 0;
@@ -317,7 +386,7 @@ void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth,
     {
         for( unsigned int x=0; x<width; x++ )
         {
-            int destoffset = ((src->binrect.y+y)*destw + (src->binrect.x+x));
+            int destoffset = ((src->posy+y)*destw + (src->posx+x));
             int srcoffset = ((sourceoffsety + y)*src->w + sourceoffsetx + x);
 
             ((int*)dest)[destoffset] = ((int*)src->imagebuffer)[srcoffset];

@@ -80,10 +80,35 @@ public:
     }
 };
 
+struct SettingsStruct
+{
+    const char* dirscr;
+    const char* outputfilename;
+    int padding;
+    bool trim;
+    int trimalpha;
+    bool triangulate;
+    bool createstrip;
+    unsigned int maxtexturesize;
+
+    SettingsStruct::SettingsStruct()
+    {
+        dirscr = 0;
+        outputfilename = 0;
+        padding = 0;
+        trim = false;
+        trimalpha = 0;
+        triangulate = false;
+        createstrip = false;
+        maxtexturesize = 2048;
+    }
+};
+
 int main(int argc, char** argv);
 ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv);
-ImageBlockInfo* CreateSpriteSheet(const char* srcdir, const char* filename, int padding, int trim, bool triangulate);
+ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings);
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);
 void TriangulateSprites(ImageBlock* pImages, int filecount);
 void TrimSprites(ImageBlock* pImages, int filecount, int trim);
