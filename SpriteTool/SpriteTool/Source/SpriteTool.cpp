@@ -347,7 +347,7 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int 
         if( currx + pImages[i].w > (unsigned int)texw )
         {
             currx = 0;
-            curry += highesty;
+            curry += pImages[i].h;
 
             if( curry > (unsigned int)texh )
                 return false;
