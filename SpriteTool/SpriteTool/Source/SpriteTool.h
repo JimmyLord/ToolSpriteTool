@@ -88,8 +88,9 @@ struct SettingsStruct
     bool trim;
     int trimalpha;
     bool triangulate;
-    bool createstrip;
     unsigned int maxtexturesize;
+    bool createstrip;
+    bool createstripfrombottomleft;
 
     SettingsStruct::SettingsStruct()
     {
@@ -99,8 +100,9 @@ struct SettingsStruct
         trim = false;
         trimalpha = 0;
         triangulate = false;
-        createstrip = false;
         maxtexturesize = 2048;
+        createstripfrombottomleft = false;
+        createstrip = false;
     }
 };
 
@@ -108,7 +110,7 @@ int main(int argc, char** argv);
 ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv);
 ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings);
 bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
-bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding, bool createfrombottomleft);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);
 void TriangulateSprites(ImageBlock* pImages, int filecount);
 void TrimSprites(ImageBlock* pImages, int filecount, int trim);

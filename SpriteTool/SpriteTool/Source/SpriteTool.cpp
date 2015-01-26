@@ -65,6 +65,10 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             else
                 settings.maxtexturesize = atoi( argv[i+1] );
         }
+        if( ( strcmp( argv[i], "-bl" ) == 0 || strcmp( argv[i], "-bottomleft" ) == 0 ) )
+        {
+            settings.createstripfrombottomleft = true;
+        }
     }
     
     if( invalidargs )
@@ -76,8 +80,9 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         printf( "[-p pixels] or -padding = padding between sprites in pixels\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - generally 0\n" );
         printf( "[-tri] or -triangulate = triangulate the sprites(WIP)\n" );
-        printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
         printf( "[-m] or -max = maximum output texture size - default is 2048\n" );
+        printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
+        printf( "[-bl] or -bottomleft = for spritestrips, start at bottom left corner\n" );
     }
     else if( settings.dirscr == 0 )
     {
@@ -106,6 +111,11 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             settings.padding = 0;
             settings.trim = false;
             settings.triangulate = false;
+
+            if( settings.createstripfrombottomleft )
+            {
+                printf( "    Creating strip from bottom left\n" );
+            }
         }
         printf( "Max texture size -> %d\n", settings.maxtexturesize );
         printf( "Padding -> %d\n", settings.padding );
@@ -199,7 +209,7 @@ using namespace boost::filesystem;
     while( done == false )
     {
         if( settings.createstrip )
-            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
+            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding, settings.createstripfrombottomleft );
         else
             done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
 
@@ -331,7 +341,7 @@ bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int pa
     return true;
 }
 
-bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding)
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding, bool createfrombottomleft)
 {
     unsigned int currx = 0;
     unsigned int curry = 0;
@@ -361,6 +371,14 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int 
         
             if( curry + pImages[i].h > highesty )
                 highesty = curry + pImages[i].h;
+        }
+    }
+
+    if( createfrombottomleft )
+    {
+        for( int i=0; i<filecount; i++ )
+        {
+            pImages[i].posy = texh - pImages[i].posy - pImages[i].h;
         }
     }
 
