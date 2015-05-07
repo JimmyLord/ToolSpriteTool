@@ -396,11 +396,11 @@ void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth,
 
 void TriangulateSprites(ImageBlock* pImages, int filecount)
 {
-    for( int i=0; i<filecount; i++ )
+    for( int filei=0; filei<filecount; filei++ )
     {
-        unsigned int w = pImages[i].w;
-        unsigned int h = pImages[i].h;
-        unsigned char* pPixels = pImages[i].imagebuffer;
+        unsigned int w = pImages[filei].w;
+        unsigned int h = pImages[filei].h;
+        unsigned char* pPixels = pImages[filei].imagebuffer;
 
         // find edges of sprite
         std::list<vec2> pPoints;
@@ -465,6 +465,30 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
         //printf( "Adding last point  - (%f, %f)\n", prevpoint.x, prevpoint.y );
         polyline.push_back( new p2t::Point( prevpoint ) );
 
+        // eliminate unneccessary vertices
+        {
+            std::deque<double> polylinequeue;
+            double* result = new double[polyline.size()*2];
+
+            for( unsigned int i=0; i<polyline.size(); i++ )
+            {
+                polylinequeue.push_back( polyline[i]->x );
+                polylinequeue.push_back( polyline[i]->y );
+            }
+
+            double* endofresult = psimpl::simplify_douglas_peucker<2>( polylinequeue.begin(), polylinequeue.end(), 2, result );
+            double* resultcopy = result;
+
+            polyline.clear();
+            while( result != endofresult )
+            {
+                polyline.push_back( new p2t::Point( result[0], result[1] ) );
+                result += 2;
+            }
+
+            delete[] resultcopy;
+        }
+
         // triangulate
         p2t::CDT* cdt = new p2t::CDT( polyline );
 
@@ -486,12 +510,12 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
         }
 
         // Cleanup
-        pImages[i].cdt = cdt;
+        pImages[filei].cdt = cdt;
         //delete cdt;
         //for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
         //    delete *p;
 
-        polyline.clear();
+        //polyline.clear();
     }
 }
 

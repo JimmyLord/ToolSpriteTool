@@ -10,7 +10,7 @@
 
 #else
 
-#include <SDKDDKVer.h>
+//#include <SDKDDKVer.h>
 
 #endif
 
@@ -36,6 +36,8 @@ struct vec2
 #include "lodepng/lodepng.h"
 #include "MarchingSquares/MarchingSquares.h"
 #include "poly2tri/poly2tri.h"
+#undef max // psimpl uses max as a variable name, I don't use it anywhere so just undefining it to avoid the issue.
+#include "psimpl/psimpl.h"
 
 #include "SpriteTool.h"
 

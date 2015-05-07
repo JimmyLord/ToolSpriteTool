@@ -67,6 +67,7 @@
     <ClInclude Include="Source\poly2tri\sweep\cdt.h" />
     <ClInclude Include="Source\poly2tri\sweep\sweep.h" />
     <ClInclude Include="Source\poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="Source\psimpl\psimpl.h" />
     <ClInclude Include="Source\SpriteTool.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
