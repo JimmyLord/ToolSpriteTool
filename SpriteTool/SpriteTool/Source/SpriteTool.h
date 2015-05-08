@@ -17,7 +17,7 @@ public:
     unsigned int trimmedw; // width and height after trimming
     unsigned int trimmedh;
     rbp::Rect binrect;
-    p2t::CDT* cdt;
+    std::vector<p2t::CDT*> cdts; // TODO: detect multiple discrete shapes in the same sprite and add them as new cdts.
 
 #if SPRITETOOLGUI
     GLuint texturehandle;
@@ -39,7 +39,7 @@ public:
         trimmedw = 0;
         trimmedh = 0;
 
-        cdt = 0;
+        //cdts.clear();
 
 #if SPRITETOOLGUI
         texturehandle = 0;
@@ -52,7 +52,7 @@ public:
     {
         delete[] filename;
         free( imagebuffer );
-        delete cdt;
+        //delete cdt;
         //TODO: delete the polyline inside the cdt object.
         //for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
         //    delete *p;

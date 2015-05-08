@@ -280,6 +280,56 @@ using namespace boost::filesystem;
                 cJSON_AddNumberToObject( fileobj, "trimw", pImageInfo->pImages[i].trimmedw );
                 cJSON_AddNumberToObject( fileobj, "trimh", pImageInfo->pImages[i].trimmedh );
                 cJSON_AddItemToArray( filearray, fileobj );
+
+                if( pImageInfo->pImages[i].cdts[0] )
+                {
+                    cJSON* vertexarray = cJSON_CreateArray();
+                    cJSON_AddItemToObject( fileobj, "Verts", vertexarray );
+
+                    cJSON* indexarray = cJSON_CreateArray();
+                    cJSON_AddItemToObject( fileobj, "Indices", indexarray );
+
+                    std::vector<p2t::Triangle*> triangles = pImageInfo->pImages[i].cdts[0]->GetTriangles();
+
+                    //std::list<p2t::Triangle*> map = cdt->GetMap();
+
+                    std::vector<p2t::Point> vertices;
+                    std::vector<unsigned int> indices;
+
+                    for( unsigned int t=0; t<triangles.size(); t++ )
+                    {
+                        for( unsigned int v=0; v<3; v++ )
+                        {
+                            p2t::Point* point = triangles[t]->GetPoint( v );
+
+                            std::vector<p2t::Point>::iterator it = std::find( vertices.begin(), vertices.end(), *point );
+                            if( it != vertices.end() )
+                            {
+                                // duplicate vertex
+                                int index = it - vertices.begin();
+                                indices.push_back( index );
+                            }
+                            else
+                            {
+                                // new vertex
+                                int index = vertices.size();
+                                vertices.push_back( *point );
+                                indices.push_back( index );
+                            }
+                        }
+                    }
+
+                    for( unsigned int i=0; i<vertices.size(); i++ )
+                    {
+                        cJSON_AddItemToArray( vertexarray, cJSON_CreateNumber( vertices[i].x ) );
+                        cJSON_AddItemToArray( vertexarray, cJSON_CreateNumber( vertices[i].y ) );
+                    }
+
+                    for( unsigned int i=0; i<indices.size(); i++ )
+                    {
+                        cJSON_AddItemToArray( indexarray, cJSON_CreateNumber( indices[i] ) );
+                    }
+                }
             }
 
             // free memory
@@ -416,75 +466,128 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
 {
     for( int filei=0; filei<filecount; filei++ )
     {
-        unsigned int w = pImages[filei].w;
-        unsigned int h = pImages[filei].h;
-        unsigned char* pPixels = pImages[filei].imagebuffer;
+        int scale = 1;
+
+        unsigned int origw = pImages[filei].w;
+        unsigned int origh = pImages[filei].h;
+
+        unsigned int scaledw;
+        unsigned int scaledh;
+        unsigned char* pscaledPixels;
+
+        // experimenting with catching corners more closely without changing marchingsquares code.
+        if( scale != 1 )
+        {
+            scaledw = pImages[filei].w * scale;
+            scaledh = pImages[filei].h * scale;
+            pscaledPixels = new unsigned char[scaledw*scaledh*4];
+            
+            for( unsigned int oh=0; oh<origh; oh++ )
+            {
+                for( unsigned int ow=0; ow<origw; ow++ )
+                {
+                    for( int y=0; y<scale; y++ )
+                    {
+                        for( int x=0; x<scale; x++ )
+                        {
+                            assert( (oh*scale+y)*scaledw + ow+x < scaledw*scaledh*4 );
+                            pscaledPixels[((oh*scale+y)*scaledw + ow*scale+x)*4 + 0] = pImages[filei].imagebuffer[(oh*origw + ow)*4 + 0];
+                            pscaledPixels[((oh*scale+y)*scaledw + ow*scale+x)*4 + 1] = pImages[filei].imagebuffer[(oh*origw + ow)*4 + 1];
+                            pscaledPixels[((oh*scale+y)*scaledw + ow*scale+x)*4 + 2] = pImages[filei].imagebuffer[(oh*origw + ow)*4 + 2];
+                            pscaledPixels[((oh*scale+y)*scaledw + ow*scale+x)*4 + 3] = pImages[filei].imagebuffer[(oh*origw + ow)*4 + 3];
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            scaledw = origw;
+            scaledh = origh;
+            pscaledPixels = pImages[filei].imagebuffer;
+        }
 
         // find edges of sprite
         std::list<vec2> pPoints;
         MarchingSquares march;
-        march.DoMarch( pPixels, w, h, &pPoints );
+        march.DoMarch( pscaledPixels, scaledw, scaledh, &pPoints );
+
+        if( scale != 1 )
+            delete pscaledPixels;
 
         // add them to a vector of points for poly2tri.
         std::vector<p2t::Point*> polyline;
 
         std::list<vec2>::iterator p;
-        p2t::Point prevpoint(-1, -1), prevprevpoint(-1, -1);
-        for( p = pPoints.begin(); p != pPoints.end(); p++ )
+
+        if( true ) // attempt to reduce the number of obvious points manually.
         {
-            p2t::Point currpoint( p->x, p->y );
-
-            bool added = false;
-
-            if( prevpoint.x != -1 )
+            p2t::Point prevpoint(-1, -1), prevprevpoint(-1, -1);
+            for( p = pPoints.begin(); p != pPoints.end(); p++ )
             {
-                if( prevprevpoint.x == -1 )
-                {
-                    //printf( "Adding first point - (%f, %f)\n", prevpoint.x, prevpoint.y );
-                    polyline.push_back( new p2t::Point( prevpoint ) );
-                    added = true;
-                }
-                else
-                {
-                    // ignore straight axis-aligned lines
-                    if( ( currpoint.x == prevpoint.x && currpoint.x == prevprevpoint.x ) ||
-                        ( currpoint.y == prevpoint.y && currpoint.y == prevprevpoint.y ) )
-                    {
-                    }
-                    // ignore straight diagonal lines
-                    else if( (abs(currpoint.x - prevpoint.x) == abs(currpoint.y - prevpoint.y)) && 
-                             (abs(prevprevpoint.x - prevpoint.x) == abs(prevprevpoint.y - prevpoint.y)) )
-                    {
+                p2t::Point currpoint( p->x, p->y );
 
-                    }
-                    // ignore tight single pixel corners going inwards
-                    else if( (currpoint.x == prevpoint.x-1 && prevprevpoint.y == prevpoint.y-1) ||
-                             (currpoint.y == prevpoint.y+1 && prevprevpoint.x == prevpoint.x-1) ||
-                             (currpoint.x == prevpoint.x+1 && prevprevpoint.y == prevpoint.y+1) ||
-                             (currpoint.y == prevpoint.y-1 && prevprevpoint.x == prevpoint.x+1) )
+                bool added = false;
+
+                if( prevpoint.x != -1 )
+                {
+                    if( prevprevpoint.x == -1 )
                     {
-                        //polyline.push_back( new p2t::Point( prevpoint ) );
-                        //added = true;
-                    }
-                    else
-                    {
-                        //printf( "Adding point       - (%f, %f)\n", prevpoint.x, prevpoint.y );
+                        //printf( "Adding first point - (%f, %f)\n", prevpoint.x, prevpoint.y );
                         polyline.push_back( new p2t::Point( prevpoint ) );
                         added = true;
                     }
+                    else
+                    {
+                        // ignore straight axis-aligned lines
+                        if( ( currpoint.x == prevpoint.x && currpoint.x == prevprevpoint.x ) ||
+                            ( currpoint.y == prevpoint.y && currpoint.y == prevprevpoint.y ) )
+                        {
+                        }
+                        // ignore straight diagonal lines
+                        else if( (abs(currpoint.x - prevpoint.x) == abs(currpoint.y - prevpoint.y)) && 
+                                 (abs(prevprevpoint.x - prevpoint.x) == abs(prevprevpoint.y - prevpoint.y)) )
+                        {
+                        }
+                        // ignore tight single pixel corners going inwards
+                        else if( (currpoint.x == prevpoint.x-1 && prevprevpoint.y == prevpoint.y-1) ||
+                                 (currpoint.y == prevpoint.y+1 && prevprevpoint.x == prevpoint.x-1) ||
+                                 (currpoint.x == prevpoint.x+1 && prevprevpoint.y == prevpoint.y+1) ||
+                                 (currpoint.y == prevpoint.y-1 && prevprevpoint.x == prevpoint.x+1) )
+                        {
+                        }
+                        else
+                        {
+                            //printf( "Adding point       - (%f, %f)\n", prevpoint.x, prevpoint.y );
+                            polyline.push_back( new p2t::Point( prevpoint ) );
+                            added = true;
+                        }
+                    }
                 }
+
+                if( added )
+                    prevprevpoint = prevpoint;
+                prevpoint = currpoint;
             }
 
-            if( added )
-                prevprevpoint = prevpoint;
-            prevpoint = currpoint;
+            //printf( "Adding last point  - (%f, %f)\n", prevpoint.x, prevpoint.y );
+            polyline.push_back( new p2t::Point( prevpoint ) );
+        }
+        else // include all points from the marching squares
+        {
+            for( p = pPoints.begin(); p != pPoints.end(); p++ )
+            {
+                polyline.push_back( new p2t::Point( p->x/(float)scale, p->y/(float)scale ) );
+            }
         }
 
-        //printf( "Adding last point  - (%f, %f)\n", prevpoint.x, prevpoint.y );
-        polyline.push_back( new p2t::Point( prevpoint ) );
-
-        // eliminate unneccessary vertices
+        // eliminate unneccessary vertices using "psimpl::simplify_douglas_peucker"
+        if( true )
         {
+            // add first point at the end to make a loop.
+            vec2 firstpoint = pPoints.front();
+            polyline.push_back( new p2t::Point( firstpoint.x, firstpoint.y ) );
+
             std::deque<double> polylinequeue;
             double* result = new double[polyline.size()*2];
 
@@ -494,11 +597,11 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
                 polylinequeue.push_back( polyline[i]->y );
             }
 
-            double* endofresult = psimpl::simplify_douglas_peucker<2>( polylinequeue.begin(), polylinequeue.end(), 2, result );
+            double* endofresult = psimpl::simplify_douglas_peucker<2>( polylinequeue.begin(), polylinequeue.end(), 2.0f, result );
             double* resultcopy = result;
 
             polyline.clear();
-            while( result != endofresult )
+            while( result != endofresult - 2 ) // don't copy last point, it should be the same as the first.
             {
                 polyline.push_back( new p2t::Point( result[0], result[1] ) );
                 result += 2;
@@ -509,31 +612,20 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
 
         // triangulate
         p2t::CDT* cdt = new p2t::CDT( polyline );
-
         cdt->Triangulate();
+        pImages[filei].cdts.push_back( cdt );
 
+        // print some status
         std::vector<p2t::Triangle*> triangles = cdt->GetTriangles();
-
-        //std::list<p2t::Triangle*> map = cdt->GetMap();
-
         printf( "Number of triangles: %d\n", triangles.size() );
-
-        for( unsigned int t=0; t<triangles.size(); t++ )
-        {
-            p2t::Point* point0 = triangles[t]->GetPoint( 0 );
-            p2t::Point* point1 = triangles[t]->GetPoint( 1 );
-            p2t::Point* point2 = triangles[t]->GetPoint( 2 );
-            printf( "triangles %d: (%0.2f,%0.2f), (%0.2f,%0.2f), (%0.2f,%0.2f)\n",
-                     t, point0->x, point0->y, point1->x, point1->y, point2->x, point2->y );
-        }
-
-        // Cleanup
-        pImages[filei].cdt = cdt;
-        //delete cdt;
-        //for( std::vector<p2t::Point*>::iterator p = polyline.begin(); p != polyline.end(); p++ )
-        //    delete *p;
-
-        //polyline.clear();
+        //for( unsigned int t=0; t<triangles.size(); t++ )
+        //{
+        //    p2t::Point* point0 = triangles[t]->GetPoint( 0 );
+        //    p2t::Point* point1 = triangles[t]->GetPoint( 1 );
+        //    p2t::Point* point2 = triangles[t]->GetPoint( 2 );
+        //    printf( "triangles %d: (%0.2f,%0.2f), (%0.2f,%0.2f), (%0.2f,%0.2f)\n",
+        //             t, point0->x, point0->y, point1->x, point1->y, point2->x, point2->y );
+        //}
     }
 }
 

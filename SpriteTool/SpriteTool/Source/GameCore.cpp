@@ -73,9 +73,9 @@ void main() \
 
         glBindBuffer( GL_ARRAY_BUFFER, m_pImageInfo->pImages[i].vbo );
 
-        if( m_pImageInfo->pImages[i].cdt )
+        if( m_pImageInfo->pImages[i].cdts[0] )
         {
-            std::vector<p2t::Triangle*> triangles = m_pImageInfo->pImages[i].cdt->GetTriangles();
+            std::vector<p2t::Triangle*> triangles = m_pImageInfo->pImages[i].cdts[0]->GetTriangles();
             unsigned int numtris = triangles.size();
             m_pImageInfo->pImages[i].numtris = numtris;
             float* verts = new float[numtris*3*4];
