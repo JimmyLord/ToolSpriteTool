@@ -58,12 +58,26 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         {
             settings.createstrip = true;
         }
+        if( ( strcmp( argv[i], "-min" ) == 0 || strcmp( argv[i], "-min" ) == 0 ) )
+        {
+            if( i+1 >= argc )
+                invalidargs = true;
+            else
+                settings.mintexturesize = atoi( argv[i+1] );
+        }
         if( ( strcmp( argv[i], "-m" ) == 0 || strcmp( argv[i], "-max" ) == 0 ) )
         {
             if( i+1 >= argc )
                 invalidargs = true;
             else
                 settings.maxtexturesize = atoi( argv[i+1] );
+        }
+        if( ( strcmp( argv[i], "-w" ) == 0 || strcmp( argv[i], "-wide" ) == 0 ) )
+        {
+            if( i+1 >= argc )
+                invalidargs = true;
+            else
+                settings.growwide = true;
         }
         if( ( strcmp( argv[i], "-bl" ) == 0 || strcmp( argv[i], "-bottomleft" ) == 0 ) )
         {
@@ -80,7 +94,9 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         printf( "[-p pixels] or -padding = padding between sprites in pixels\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - generally 0\n" );
         printf( "[-tri] or -triangulate = triangulate the sprites(WIP)\n" );
+        printf( "[-min] or -min = minimum output texture size - default is 64\n" );
         printf( "[-m] or -max = maximum output texture size - default is 2048\n" );
+        printf( "[-w] or -wide = prefer wide textures - default is square\n" );
         printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
         printf( "[-bl] or -bottomleft = for spritestrips, start at bottom left corner\n" );
     }
@@ -117,7 +133,9 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
                 printf( "    Creating strip from bottom left\n" );
             }
         }
+        printf( "Min texture size -> %d\n", settings.mintexturesize );
         printf( "Max texture size -> %d\n", settings.maxtexturesize );
+        printf( "Texture shape -> %s\n", settings.growwide ? "wide" : "square" );
         printf( "Padding -> %d\n", settings.padding );
         if( settings.trim )
             printf( "Trim -> Enabled -> %d\n", settings.trimalpha );
@@ -204,8 +222,8 @@ using namespace boost::filesystem;
 
     // try to fit them into texture
     bool done = false;
-    unsigned int sizex = 64;
-    unsigned int sizey = 64;
+    unsigned int sizex = settings.mintexturesize;
+    unsigned int sizey = settings.mintexturesize;
     while( done == false )
     {
         if( settings.createstrip )
@@ -215,12 +233,12 @@ using namespace boost::filesystem;
 
         if( done == false )
         {
-            if( settings.createstrip )
+            if( settings.createstrip || settings.growwide )
             {
                 sizex *= 2;
                 if( sizex > settings.maxtexturesize )
                 {
-                    sizex = 64;
+                    sizex = settings.mintexturesize;
                     sizey *= 2;
                 }
             }
@@ -281,7 +299,7 @@ using namespace boost::filesystem;
                 cJSON_AddNumberToObject( fileobj, "trimh", pImageInfo->pImages[i].trimmedh );
                 cJSON_AddItemToArray( filearray, fileobj );
 
-                if( pImageInfo->pImages[i].cdts[0] )
+                if( pImageInfo->pImages[i].cdts.size() > 0 && pImageInfo->pImages[i].cdts[0] )
                 {
                     cJSON* vertexarray = cJSON_CreateArray();
                     cJSON_AddItemToObject( fileobj, "Verts", vertexarray );

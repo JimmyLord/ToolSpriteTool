@@ -88,7 +88,9 @@ struct SettingsStruct
     bool trim;
     int trimalpha;
     bool triangulate;
+    unsigned int mintexturesize;
     unsigned int maxtexturesize;
+    bool growwide;
     bool createstrip;
     bool createstripfrombottomleft;
 
@@ -100,7 +102,9 @@ struct SettingsStruct
         trim = false;
         trimalpha = 0;
         triangulate = false;
+        mintexturesize = 64;
         maxtexturesize = 2048;
+        growwide = false;
         createstripfrombottomleft = false;
         createstrip = false;
     }
