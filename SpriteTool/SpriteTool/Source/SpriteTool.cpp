@@ -25,7 +25,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             if( i+1 >= argc )
                 invalidargs = true;
             else
-                settings.dirscr = argv[i+1];
+                settings.dirsrc = argv[i+1];
         }
         if( ( strcmp( argv[i], "-o" ) == 0 || strcmp( argv[i], "-output" ) == 0 ) )
         {
@@ -81,7 +81,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         }
         if( ( strcmp( argv[i], "-bl" ) == 0 || strcmp( argv[i], "-bottomleft" ) == 0 ) )
         {
-            settings.createstripfrombottomleft = true;
+            settings.originatbottomleft = true;
         }
     }
     
@@ -89,7 +89,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
     {
         printf( "Invalid arguments\n" );
         printf( "\n" );
-        printf( "[-d imagedir] or -dirscr = supply a relative or absolute path\n" );
+        printf( "[-d imagedir] or -dirsrc = supply a relative or absolute path\n" );
         printf( "[-o output filename] or -output = output filename\n" );
         printf( "[-p pixels] or -padding = padding between sprites in pixels\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - generally 0\n" );
@@ -100,7 +100,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
         printf( "[-bl] or -bottomleft = for spritestrips, start at bottom left corner\n" );
     }
-    else if( settings.dirscr == 0 )
+    else if( settings.dirsrc == 0 )
     {
         printf( "Source directory required - use -d\n" );
     }
@@ -119,7 +119,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
     else
     {
         printf( "Starting\n" );
-        printf( "Source image directory -> %s\n", settings.dirscr );
+        printf( "Source image directory -> %s\n", settings.dirsrc );
         printf( "Output filename -> %s\n", settings.outputfilename );
         if( settings.createstrip )
         {
@@ -128,9 +128,9 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             settings.trim = false;
             settings.triangulate = false;
 
-            if( settings.createstripfrombottomleft )
+            if( settings.originatbottomleft )
             {
-                printf( "    Creating strip from bottom left\n" );
+                printf( "    Starting at bottom left\n" );
             }
         }
         printf( "Min texture size -> %d\n", settings.mintexturesize );
@@ -145,6 +145,10 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             printf( "Triangulate -> Enabled\n" );
         else
             printf( "Triangulate -> Disabled\n" );        
+        if( settings.originatbottomleft )
+            printf( "Origin -> Bottom Left\n" );
+        else
+            printf( "Origin -> Top Left\n" );
 
         pImageInfo = CreateSpriteSheet( settings );
 
@@ -163,7 +167,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
 using namespace rbp;
 using namespace boost::filesystem;
 
-    path srcpath( settings.dirscr );
+    path srcpath( settings.dirsrc );
 
     if( exists( srcpath ) == false )
         return 0;
@@ -227,7 +231,7 @@ using namespace boost::filesystem;
     while( done == false )
     {
         if( settings.createstrip )
-            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding, settings.createstripfrombottomleft );
+            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding, settings.originatbottomleft );
         else
             done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
 
@@ -287,6 +291,12 @@ using namespace boost::filesystem;
         {
             if( done == true )
             {
+                // treat bottom left as (0,0), but not for sprite strips (they're flipped in PackTextures_SpriteStrip)
+                if( settings.originatbottomleft && settings.createstrip == false )
+                {
+                    pImageInfo->pImages[i].posy = sizey - pImageInfo->pImages[i].posy - pImageInfo->pImages[i].h;
+                }
+
                 cJSON* fileobj = cJSON_CreateObject();
                 cJSON_AddStringToObject( fileobj, "filename", pImageInfo->pImages[i].filename );
                 cJSON_AddNumberToObject( fileobj, "origw", pImageInfo->pImages[i].w );

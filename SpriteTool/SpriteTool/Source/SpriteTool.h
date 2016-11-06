@@ -82,7 +82,7 @@ public:
 
 struct SettingsStruct
 {
-    const char* dirscr;
+    const char* dirsrc;
     const char* outputfilename;
     int padding;
     bool trim;
@@ -92,11 +92,11 @@ struct SettingsStruct
     unsigned int maxtexturesize;
     bool growwide;
     bool createstrip;
-    bool createstripfrombottomleft;
+    bool originatbottomleft;
 
     SettingsStruct::SettingsStruct()
     {
-        dirscr = 0;
+        dirsrc = 0;
         outputfilename = 0;
         padding = 0;
         trim = false;
@@ -105,7 +105,7 @@ struct SettingsStruct
         mintexturesize = 64;
         maxtexturesize = 2048;
         growwide = false;
-        createstripfrombottomleft = false;
+        originatbottomleft = false;
         createstrip = false;
     }
 };
