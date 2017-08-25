@@ -94,7 +94,7 @@ struct SettingsStruct
     bool createstrip;
     bool originatbottomleft;
 
-    SettingsStruct::SettingsStruct()
+    SettingsStruct()
     {
         dirsrc = 0;
         outputfilename = 0;

@@ -371,7 +371,11 @@ using namespace boost::filesystem;
         char outputjsonfile[260];//MAX_PATH];
         sprintf_s( outputjsonfile, 260, "%s.json", settings.outputfilename );
         FILE* file;
+#if WIN32
         fopen_s( &file, outputjsonfile, "w" );
+#else
+        file = fopen( outputjsonfile, "w" );
+#endif
         fprintf( file, jsonstr );
         fclose( file );
 
@@ -573,8 +577,8 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
                         {
                         }
                         // ignore straight diagonal lines
-                        else if( (abs(currpoint.x - prevpoint.x) == abs(currpoint.y - prevpoint.y)) && 
-                                 (abs(prevprevpoint.x - prevpoint.x) == abs(prevprevpoint.y - prevpoint.y)) )
+                        else if( (std::abs(currpoint.x - prevpoint.x) == std::abs(currpoint.y - prevpoint.y)) && 
+                                 (std::abs(prevprevpoint.x - prevpoint.x) == std::abs(prevprevpoint.y - prevpoint.y)) )
                         {
                         }
                         // ignore tight single pixel corners going inwards
