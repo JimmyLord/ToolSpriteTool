@@ -113,8 +113,8 @@ struct SettingsStruct
 int main(int argc, char** argv);
 ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv);
 ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings);
-bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int padding);
-bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding, bool createfrombottomleft);
+bool PackTextures(ImageBlock* pImages, int filecount, unsigned int texw, unsigned int texh, int padding);
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, unsigned int texw, unsigned int texh, int padding, bool createfrombottomleft, bool allowmultiplelines);
 void CopyImageChunk(unsigned char* dest, unsigned int destw, unsigned int desth, ImageBlock* src);
 void TriangulateSprites(ImageBlock* pImages, int filecount);
 void TrimSprites(ImageBlock* pImages, int filecount, int trim);

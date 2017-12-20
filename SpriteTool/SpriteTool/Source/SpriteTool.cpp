@@ -74,10 +74,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         }
         if( ( strcmp( argv[i], "-w" ) == 0 || strcmp( argv[i], "-wide" ) == 0 ) )
         {
-            if( i+1 >= argc )
-                invalidargs = true;
-            else
-                settings.growwide = true;
+            settings.growwide = true;
         }
         if( ( strcmp( argv[i], "-bl" ) == 0 || strcmp( argv[i], "-bottomleft" ) == 0 ) )
         {
@@ -156,8 +153,14 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
     }
 
 #if _DEBUG
+
+#if !MYFW_WINDOWS
     _getch();
+#else
+    getchar();
 #endif
+
+#endif // _DEBUG
 
 	return pImageInfo;
 }
@@ -231,9 +234,17 @@ using namespace boost::filesystem;
     while( done == false )
     {
         if( settings.createstrip )
-            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding, settings.originatbottomleft );
+        {
+            bool allowmultiplelines = false;
+            if( sizex == settings.maxtexturesize )
+                allowmultiplelines = true;
+
+            done = PackTextures_SpriteStrip( pImageInfo->pImages, filecount, sizex, sizey, settings.padding, settings.originatbottomleft, allowmultiplelines );
+        }
         else
+        {
             done = PackTextures( pImageInfo->pImages, filecount, sizex, sizey, settings.padding );
+        }
 
         if( done == false )
         {
@@ -295,6 +306,7 @@ using namespace boost::filesystem;
                 if( settings.originatbottomleft && settings.createstrip == false )
                 {
                     pImageInfo->pImages[i].posy = sizey - pImageInfo->pImages[i].posy - pImageInfo->pImages[i].h;
+                    assert( pImageInfo->pImages[i].posy < sizey );
                 }
 
                 cJSON* fileobj = cJSON_CreateObject();
@@ -389,7 +401,7 @@ using namespace boost::filesystem;
     return pImageInfo;
 }
 
-bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int padding)
+bool PackTextures(ImageBlock* pImages, int filecount, unsigned int texw, unsigned int texh, int padding)
 {
     rbp::MaxRectsBinPack m_BinPack;
     m_BinPack.Init( texw, texh );
@@ -410,6 +422,8 @@ bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int pa
         pImages[i].posx = pImages[i].binrect.x;
         pImages[i].posy = pImages[i].binrect.y;
 
+        assert( pImages[i].posy < texh );
+
         //if( rect.x + rect.width > (int)highestx )
         //    highestx = rect.x + rect.width;
 
@@ -423,7 +437,7 @@ bool PackTextures(ImageBlock* pImages, int filecount, int texw, int texh, int pa
     return true;
 }
 
-bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int texh, int padding, bool createfrombottomleft)
+bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, unsigned int texw, unsigned int texh, int padding, bool createfrombottomleft, bool allowmultiplelines)
 {
     unsigned int currx = 0;
     unsigned int curry = 0;
@@ -438,6 +452,9 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int 
 
         if( currx + pImages[i].w > (unsigned int)texw )
         {
+            if( allowmultiplelines == false )
+                return false;
+
             currx = 0;
             curry += pImages[i].h;
 
@@ -449,10 +466,20 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int 
             pImages[i].posx = currx;
             pImages[i].posy = curry;
 
+            if( pImages[i].posx >= texw )
+                return false;
+            if( pImages[i].posy >= texh )
+                return false;
+
+            assert( pImages[i].posy < texh );
+
             currx += pImages[i].w;
         
             if( curry + pImages[i].h > highesty )
                 highesty = curry + pImages[i].h;
+
+            if( highesty > texh )
+                return false;
         }
     }
 
@@ -461,6 +488,7 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int filecount, int texw, int 
         for( int i=0; i<filecount; i++ )
         {
             pImages[i].posy = texh - pImages[i].posy - pImages[i].h;
+            assert( pImages[i].posy < texh );
         }
     }
 
