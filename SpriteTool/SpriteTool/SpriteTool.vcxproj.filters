@@ -33,6 +33,9 @@
     <Filter Include="Source Files\psimpl">
       <UniqueIdentifier>{5b44828d-53dd-4c2d-a267-f88ad21759e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\dirent">
+      <UniqueIdentifier>{a61abfb0-f097-4ca2-8fca-86d9093f1096}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\CommonHeader.cpp">
@@ -114,6 +117,9 @@
     </ClInclude>
     <ClInclude Include="Source\psimpl\psimpl.h">
       <Filter>Source Files\psimpl</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\dirent\dirent.h">
+      <Filter>Source Files\dirent</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -29,7 +29,7 @@ private:
     unsigned int m_Width;
     unsigned int m_Height;
     
-    std::list<vec2>* m_Results;
+    std::list<ivec2>* m_Results;
 
     // The direction we previously stepped
     StepDirection previousStep;
@@ -42,7 +42,7 @@ private:
     // object in that texture, using alpha==0 to determine
     // the boundary.
 public:
-    void DoMarch(const unsigned char* pixels, unsigned int w, unsigned int h, std::list<vec2>* output)
+    void DoMarch(const unsigned char* pixels, unsigned int w, unsigned int h, std::list<ivec2>* output)
     {
         m_Pixels = pixels;
         m_Width = w;
@@ -51,16 +51,16 @@ public:
         m_Results = output;
 
         // Find the start points
-        vec2 perimeterStart = FindStartPoint();
+        ivec2 perimeterStart = FindStartPoint();
 
         // Return the list of points
         return WalkPerimeter( perimeterStart.x, perimeterStart.y );
     }
 
     // Finds the first pixel in the perimeter of the image
-    vec2 FindStartPoint()
+    ivec2 FindStartPoint()
     {
-        vec2 ret;
+        ivec2 ret;
 
         // Scan along the whole image
         for( unsigned int i=0; i<m_Width*m_Height; i++ )
@@ -115,7 +115,7 @@ public:
             // add it to the list of points
             if( x >= 0 && x < m_Width && y >= 0 && y < m_Height )
             {
-                vec2 temp;
+                ivec2 temp;
                 temp.x = x;
                 temp.y = y;
                 m_Results->push_back( temp );

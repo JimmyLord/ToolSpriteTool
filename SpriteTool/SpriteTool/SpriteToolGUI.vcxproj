@@ -135,6 +135,7 @@
     <ClInclude Include="Source\BinPackers\Rect.h" />
     <ClInclude Include="Source\cJSON\cJSON.h" />
     <ClInclude Include="Source\CommonHeader.h" />
+    <ClInclude Include="Source\dirent\dirent.h" />
     <ClInclude Include="Source\GameCore.h" />
     <ClInclude Include="Source\GL\glext.h" />
     <ClInclude Include="Source\GL\GLExtensions.h" />

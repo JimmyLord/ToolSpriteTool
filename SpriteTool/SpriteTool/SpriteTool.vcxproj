@@ -58,6 +58,7 @@
     <ClInclude Include="Source\BinPackers\Rect.h" />
     <ClInclude Include="Source\cJSON\cJSON.h" />
     <ClInclude Include="Source\CommonHeader.h" />
+    <ClInclude Include="Source\dirent\dirent.h" />
     <ClInclude Include="Source\lodepng\lodepng.h" />
     <ClInclude Include="Source\MarchingSquares\MarchingSquares.h" />
     <ClInclude Include="Source\poly2tri\common\shapes.h" />

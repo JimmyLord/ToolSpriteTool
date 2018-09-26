@@ -165,28 +165,50 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
 	return pImageInfo;
 }
 
-ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
+void listdir(std::vector<std::string>* pFileList, const char *name, const char* ext)
 {
-using namespace rbp;
-using namespace boost::filesystem;
+    DIR* dir;
+    struct dirent* entry;
 
-    path srcpath( settings.dirsrc );
+    if( (dir = opendir(name)) == 0 )
+        return;
 
-    if( exists( srcpath ) == false )
-        return 0;
-
-    recursive_directory_iterator end_itr; // default construction yields past-the-end
-
-    int filecount = 0;
-    for( recursive_directory_iterator itr( srcpath ); itr != end_itr; itr++ )
+    while( (entry = readdir(dir)) != 0 )
     {
-        if( itr->path().extension() == ".png" )
+        char path[PATH_MAX];
+
+        if( entry->d_type == DT_DIR )
         {
-            filecount++;
+            if( strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 )
+                continue;
+
+            sprintf_s( path, sizeof(path), "%s/%s", name, entry->d_name );
+            listdir( pFileList, path, ext );
+        }
+        else
+        {
+            int len = strlen( entry->d_name );
+            if( len > 4 )
+            {
+                if( strcmp( &entry->d_name[len-4], ext ) == 0 )
+                {
+                    sprintf_s( path, sizeof(path), "%s/%s", name, entry->d_name );
+                    pFileList->push_back( path );
+                }
+            }
         }
     }
 
-    if( filecount == 0 )
+    closedir(dir);
+}
+
+ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
+{
+    std::vector<std::string> fileList;
+    listdir( &fileList, settings.dirsrc, ".png" );
+
+    int filecount = fileList.size();
+    if( fileList.size() == 0 )
         return 0;
 
     ImageBlockInfo* pImageInfo = new ImageBlockInfo;
@@ -197,28 +219,19 @@ using namespace boost::filesystem;
     unsigned int highesty = 0;
 
     // load all the images
-    filecount = 0;
-    for( recursive_directory_iterator itr( srcpath ); itr != end_itr; itr++ )
+    for( unsigned int i=0; i<fileList.size(); i++ )
     {
-        if( itr->path().extension() == ".png" )
-        {
-            path relativepath = itr->path().relative_path();
-            std::string relativepathstr = relativepath.string();
-            const char* relativepathcstr = relativepathstr.c_str();
+        const char* relativepathcstr = fileList[i].c_str();
+        const char* filenamecstr = fileList[i].c_str();
 
-            path filename = itr->path().filename();
-            std::string filenamestr = filename.string();
-            const char* filenamecstr = filenamestr.c_str();
-
-            int len = strlen(filenamecstr);
-            pImageInfo->pImages[filecount].filename = new char[len+1];
-            strcpy_s( pImageInfo->pImages[filecount].filename, len+1, filenamecstr );
-            lodepng_decode32_file( &pImageInfo->pImages[filecount].imagebuffer,
-                                   &pImageInfo->pImages[filecount].w, &pImageInfo->pImages[filecount].h,
-                                   relativepathcstr );
-
-            filecount++;
-        }
+        int len = strlen(filenamecstr);
+        int srcDirNameLen = strlen( settings.dirsrc );
+        int finalLen = len - (srcDirNameLen+1) + 1;
+        pImageInfo->pImages[i].filename = new char[finalLen];
+        strcpy_s( pImageInfo->pImages[i].filename, finalLen, &filenamecstr[srcDirNameLen+1] );
+        lodepng_decode32_file( &pImageInfo->pImages[i].imagebuffer,
+                                &pImageInfo->pImages[i].w, &pImageInfo->pImages[i].h,
+                                relativepathcstr );
     }
 
     // triangulate the sprites, this will also trim them.
@@ -284,7 +297,7 @@ using namespace boost::filesystem;
             CopyImageChunk( pNewImage, sizex, sizey, &pImageInfo->pImages[i] );
         }
 
-        char outputfile[260];//MAX_PATH];
+        char outputfile[PATH_MAX];
         sprintf_s( outputfile, 260, "%s.png", settings.outputfilename );
         lodepng_encode32_file( outputfile, pNewImage, sizex, sizey );
 
@@ -380,7 +393,7 @@ using namespace boost::filesystem;
         char* jsonstr = cJSON_Print( root );
 
         //printf( "%s\n", jsonstr );
-        char outputjsonfile[260];//MAX_PATH];
+        char outputjsonfile[PATH_MAX];
         sprintf_s( outputjsonfile, 260, "%s.json", settings.outputfilename );
         FILE* file;
 #if WIN32
@@ -568,7 +581,7 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
         }
 
         // find edges of sprite
-        std::list<vec2> pPoints;
+        std::list<ivec2> pPoints;
         MarchingSquares march;
         march.DoMarch( pscaledPixels, scaledw, scaledh, &pPoints );
 
@@ -578,7 +591,7 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
         // add them to a vector of points for poly2tri.
         std::vector<p2t::Point*> polyline;
 
-        std::list<vec2>::iterator p;
+        std::list<ivec2>::iterator p;
 
         if( true ) // attempt to reduce the number of obvious points manually.
         {
@@ -645,7 +658,7 @@ void TriangulateSprites(ImageBlock* pImages, int filecount)
         if( true )
         {
             // add first point at the end to make a loop.
-            vec2 firstpoint = pPoints.front();
+            ivec2 firstpoint = pPoints.front();
             polyline.push_back( new p2t::Point( firstpoint.x, firstpoint.y ) );
 
             std::deque<double> polylinequeue;

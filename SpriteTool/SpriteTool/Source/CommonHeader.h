@@ -34,9 +34,14 @@
 #include <list>
 #include <assert.h>
 
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
+#if WIN32
+#include "dirent/dirent.h"
+#else
+#include <dirent.h>
+#endif
 
-struct vec2
+struct ivec2
 {
     int x;
     int y;
