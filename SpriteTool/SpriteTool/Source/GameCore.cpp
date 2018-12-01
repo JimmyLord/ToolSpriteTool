@@ -66,7 +66,7 @@ void main() \
         glGenBuffers( 1, &m_pImageInfo->pImages[i].vbo );
 
         glBindTexture( GL_TEXTURE_2D, m_pImageInfo->pImages[i].texturehandle );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, m_pImageInfo->pImages[i].w, m_pImageInfo->pImages[i].h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pImageInfo->pImages[i].imagebuffer );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, m_pImageInfo->pImages[i].w, m_pImageInfo->pImages[i].h, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pImageInfo->pImages[i].imageBuffer );
 
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -112,10 +112,10 @@ void main() \
         {
             // make a smaller quad based on trimmed size.
             m_pImageInfo->pImages[i].numtris = 2;
-            float x = (float)m_pImageInfo->pImages[i].trimmedx;
-            float y = (float)m_pImageInfo->pImages[i].trimmedy;
-            float w = (float)m_pImageInfo->pImages[i].trimmedw;
-            float h = (float)m_pImageInfo->pImages[i].trimmedh;
+            float x = (float)m_pImageInfo->pImages[i].trimmedX;
+            float y = (float)m_pImageInfo->pImages[i].trimmedY;
+            float w = (float)m_pImageInfo->pImages[i].trimmedW;
+            float h = (float)m_pImageInfo->pImages[i].trimmedH;
 
             float origw = (float)m_pImageInfo->pImages[i].w;
             float origh = (float)m_pImageInfo->pImages[i].h;
