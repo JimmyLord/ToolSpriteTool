@@ -399,7 +399,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
         cJSON* jSpriteArray = cJSON_CreateArray();
 
         cJSON_AddNumberToObject( jRoot, "SpriteTool", 2 );
-        cJSON_AddStringToObject( jRoot, "Filename", outputfile );
+        cJSON_AddStringToObject( jRoot, "Texture", outputfile );
         cJSON_AddNumberToObject( jRoot, "Width", sizeX );
         cJSON_AddNumberToObject( jRoot, "Height", sizeY );
 
