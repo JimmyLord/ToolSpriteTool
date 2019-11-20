@@ -324,8 +324,8 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
         pImageInfo->pImages[i].filename = new char[finalLen];
         strcpy_s( pImageInfo->pImages[i].filename, finalLen, &filenameCStr[srcDirNameLen+1] );
         lodepng_decode32_file( &pImageInfo->pImages[i].imageBuffer,
-                                &pImageInfo->pImages[i].w, &pImageInfo->pImages[i].h,
-                                relativePathCStr );
+                               &pImageInfo->pImages[i].w, &pImageInfo->pImages[i].h,
+                               filenameCStr );
     }
 
     // Triangulate the sprites, this will also trim them.
@@ -413,7 +413,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
                 if( settings.originAtBottomLeft && settings.createStrip == false )
                 {
                     pImageInfo->pImages[i].y = sizeY - pImageInfo->pImages[i].y - pImageInfo->pImages[i].h;
-                    assert( pImageInfo->pImages[i].posy < sizeY );
+                    assert( pImageInfo->pImages[i].y < sizeY );
                 }
 
                 cJSON* jSprite = cJSON_CreateObject();
@@ -595,7 +595,7 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int fileCount, unsigned int t
         for( int i=0; i<fileCount; i++ )
         {
             pImages[i].y = textureHeight - pImages[i].y - pImages[i].h;
-            assert( pImages[i].posy < textureHeight );
+            assert( pImages[i].y < textureHeight );
         }
     }
 
@@ -662,7 +662,7 @@ void TriangulateSprites(ImageBlock* pImages, int fileCount)
                     {
                         for( int x=0; x<scale; x++ )
                         {
-                            assert( (oh*scale+y)*scaledw + ow+x < scaledw*scaledh*4 );
+                            assert( (oh*scale+y)*scaledW + ow+x < scaledW*scaledH*4 );
                             pscaledPixels[((oh*scale+y)*scaledW + ow*scale+x)*4 + 0] = pImages[filei].imageBuffer[(oh*origW + ow)*4 + 0];
                             pscaledPixels[((oh*scale+y)*scaledW + ow*scale+x)*4 + 1] = pImages[filei].imageBuffer[(oh*origW + ow)*4 + 1];
                             pscaledPixels[((oh*scale+y)*scaledW + ow*scale+x)*4 + 2] = pImages[filei].imageBuffer[(oh*origW + ow)*4 + 2];
