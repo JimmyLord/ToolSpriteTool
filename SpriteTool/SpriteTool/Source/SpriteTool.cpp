@@ -416,16 +416,32 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
                     assert( pImageInfo->pImages[i].y < sizeY );
                 }
 
+                char filenameWithoutExtension[PATH_MAX];
+                int fullNameLen = strlen(pImageInfo->pImages[i].filename);
+                int extensionLen = 0;
+                for( int j=fullNameLen-1; j>=1; j-- )
+                {
+                    if( pImageInfo->pImages[i].filename[j] == '.' )
+                    {
+                        extensionLen = fullNameLen - j;
+                        break;
+                    }
+                }
+                strncpy_s( filenameWithoutExtension, pImageInfo->pImages[i].filename, fullNameLen-extensionLen );
+
                 cJSON* jSprite = cJSON_CreateObject();
-                cJSON_AddStringToObject( jSprite, "Name", pImageInfo->pImages[i].filename );
+                cJSON_AddStringToObject( jSprite, "Name", filenameWithoutExtension );
                 cJSON_AddNumberToObject( jSprite, "X", pImageInfo->pImages[i].x );
                 cJSON_AddNumberToObject( jSprite, "Y", pImageInfo->pImages[i].y );
                 cJSON_AddNumberToObject( jSprite, "W", pImageInfo->pImages[i].w );
                 cJSON_AddNumberToObject( jSprite, "H", pImageInfo->pImages[i].h );
-                cJSON_AddNumberToObject( jSprite, "TrimX", pImageInfo->pImages[i].trimmedX );
-                cJSON_AddNumberToObject( jSprite, "TrimY", pImageInfo->pImages[i].trimmedY );
-                cJSON_AddNumberToObject( jSprite, "TrimW", pImageInfo->pImages[i].trimmedW );
-                cJSON_AddNumberToObject( jSprite, "TrimH", pImageInfo->pImages[i].trimmedH );
+                if( settings.trim )
+                {
+                    cJSON_AddNumberToObject( jSprite, "TrimX", pImageInfo->pImages[i].trimmedX );
+                    cJSON_AddNumberToObject( jSprite, "TrimY", pImageInfo->pImages[i].trimmedY );
+                    cJSON_AddNumberToObject( jSprite, "TrimW", pImageInfo->pImages[i].trimmedW );
+                    cJSON_AddNumberToObject( jSprite, "TrimH", pImageInfo->pImages[i].trimmedH );
+                }
                 cJSON_AddItemToArray( jSpriteArray, jSprite );
 
                 if( pImageInfo->pImages[i].cdts.size() > 0 && pImageInfo->pImages[i].cdts[0] )
