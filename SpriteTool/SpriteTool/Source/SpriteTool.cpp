@@ -398,12 +398,14 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
         cJSON* jRoot = cJSON_CreateObject();
         cJSON* jSpriteArray = cJSON_CreateArray();
 
-        cJSON_AddNumberToObject( jRoot, "SpriteTool", 2 );
-        cJSON_AddStringToObject( jRoot, "Texture", outputfile );
-        cJSON_AddNumberToObject( jRoot, "Width", sizeX );
-        cJSON_AddNumberToObject( jRoot, "Height", sizeY );
+        cJSON_AddNumberToObject( jRoot, "spritetool", 3 );
+        cJSON_AddStringToObject( jRoot, "filename", outputfile );
+        cJSON* jSize = cJSON_CreateArray();
+        cJSON_AddItemToObject( jRoot, "size", jSize );
+        cJSON_AddItemToArray( jSize, cJSON_CreateNumber(sizeX) );
+        cJSON_AddItemToArray( jSize, cJSON_CreateNumber(sizeY) );
 
-        cJSON_AddItemToObject( jRoot, "Sprites", jSpriteArray );
+        cJSON_AddItemToObject( jRoot, "sprites", jSpriteArray );
 
         for( int i=0; i<fileCount; i++ )
         {
@@ -430,27 +432,39 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
                 strncpy_s( filenameWithoutExtension, pImageInfo->pImages[i].filename, fullNameLen-extensionLen );
 
                 cJSON* jSprite = cJSON_CreateObject();
-                cJSON_AddStringToObject( jSprite, "Name", filenameWithoutExtension );
-                cJSON_AddNumberToObject( jSprite, "X", pImageInfo->pImages[i].x );
-                cJSON_AddNumberToObject( jSprite, "Y", pImageInfo->pImages[i].y );
-                cJSON_AddNumberToObject( jSprite, "W", pImageInfo->pImages[i].w );
-                cJSON_AddNumberToObject( jSprite, "H", pImageInfo->pImages[i].h );
+                cJSON_AddStringToObject( jSprite, "name", filenameWithoutExtension );
+                
+                cJSON* jPos = cJSON_CreateArray();
+                cJSON_AddItemToObject( jSprite, "pos", jPos );
+                cJSON_AddItemToArray( jPos, cJSON_CreateNumber(pImageInfo->pImages[i].x) );
+                cJSON_AddItemToArray( jPos, cJSON_CreateNumber(pImageInfo->pImages[i].y) );
+                
+                cJSON* jSize = cJSON_CreateArray();
+                cJSON_AddItemToObject( jSprite, "size", jSize );
+                cJSON_AddItemToArray( jSize, cJSON_CreateNumber(pImageInfo->pImages[i].w) );
+                cJSON_AddItemToArray( jSize, cJSON_CreateNumber(pImageInfo->pImages[i].h) );
+                
                 if( settings.trim )
                 {
-                    cJSON_AddNumberToObject( jSprite, "TrimX", pImageInfo->pImages[i].trimmedX );
-                    cJSON_AddNumberToObject( jSprite, "TrimY", pImageInfo->pImages[i].trimmedY );
-                    cJSON_AddNumberToObject( jSprite, "TrimW", pImageInfo->pImages[i].trimmedW );
-                    cJSON_AddNumberToObject( jSprite, "TrimH", pImageInfo->pImages[i].trimmedH );
+                    cJSON* jPos = cJSON_CreateArray();
+                    cJSON_AddItemToObject( jSprite, "trimpos", jPos );
+                    cJSON_AddItemToArray( jPos, cJSON_CreateNumber(pImageInfo->pImages[i].trimmedX) );
+                    cJSON_AddItemToArray( jPos, cJSON_CreateNumber(pImageInfo->pImages[i].trimmedY) );
+
+                    cJSON* jSize = cJSON_CreateArray();
+                    cJSON_AddItemToObject( jSprite, "trimsize", jSize );
+                    cJSON_AddItemToArray( jSize, cJSON_CreateNumber(pImageInfo->pImages[i].trimmedW) );
+                    cJSON_AddItemToArray( jSize, cJSON_CreateNumber(pImageInfo->pImages[i].trimmedH) );
                 }
                 cJSON_AddItemToArray( jSpriteArray, jSprite );
 
                 if( pImageInfo->pImages[i].cdts.size() > 0 && pImageInfo->pImages[i].cdts[0] )
                 {
                     cJSON* jVertexArray = cJSON_CreateArray();
-                    cJSON_AddItemToObject( jSprite, "Verts", jVertexArray );
+                    cJSON_AddItemToObject( jSprite, "verts", jVertexArray );
 
                     cJSON* jIndexArray = cJSON_CreateArray();
-                    cJSON_AddItemToObject( jSprite, "Indices", jIndexArray );
+                    cJSON_AddItemToObject( jSprite, "indices", jIndexArray );
 
                     std::vector<p2t::Triangle*> triangles = pImageInfo->pImages[i].cdts[0]->GetTriangles();
 
