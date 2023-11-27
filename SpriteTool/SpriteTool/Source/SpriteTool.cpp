@@ -41,6 +41,10 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             else
                 settings.padding = atoi( argv[i+1] );
         }
+        if( ( strcmp( argv[i], "-ex" ) == 0 || strcmp( argv[i], "-extrude" ) == 0 ) )
+        {
+            settings.extrude = true;
+        }
         if( ( strcmp( argv[i], "-t" ) == 0 || strcmp( argv[i], "-trim" ) == 0 ) )
         {
             settings.trim = true;
@@ -85,9 +89,13 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             settings.splitExistingStrips = true;
 
             if( i+1 >= argc )
+            {
                 invalidArgs = true;
+            }
             else
-                settings.splitSpritesheetsWidth = atoi( argv[i+1] );
+            {
+                int n = sscanf_s( argv[i+1], "%dx%d", &settings.splitSpritesheetsWidth, &settings.splitSpritesheetsHeight );
+            }
         }
     }
     
@@ -98,14 +106,15 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         printf( "[-i directory] or -input = relative or absolute path of input directory\n" );
         printf( "[-o name] or -output = output name without extension\n" );
         printf( "[-p pixels] or -padding = padding between sprites in pixels - default is 0\n" );
+        printf( "[-ex] or -extrude = extrude sprites by 1 pixel in each direction, will disable padding setting\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - specify alpha from 0 to 255\n" );
         printf( "[-min size] or -min = minimum output texture size - default is 64\n" );
         printf( "[-m size] or -max = maximum output texture size - default is 2048\n" );
-        printf( "[-w] or -wide = prefer wide textures - default is square textures\n" );
+        printf( "[-w] or -wide = prefer wide output textures - default is square textures\n" );
         printf( "[-s] or -strip = create sprite strip, maintaining order of files, disables padding, trim and triangulate\n" );
         printf( "[-bl] or -bottomleft = for spritestrips, start at bottom left corner\n" );
         printf( "[-tri] or -triangulate = triangulate the sprites(WIP)\n" );
-        printf( "[-sp width] or -split = split existing spritestrips horizontally - specify width of sprites in source image\n" );
+        printf( "[-sp WxH] or -split = split existing spritestrips - specify width and height of sprites in source image - default is 32x32\n" );
     }
     else if( settings.inputDir == 0 )
     {
@@ -134,7 +143,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         
         if( settings.splitExistingStrips )
         {
-            printf( "Spliting existing strips -> %d - disabling everything else\n", settings.splitSpritesheetsWidth );
+            printf( "Spliting existing strips -> %dx%d - disabling everything else\n", settings.splitSpritesheetsWidth, settings.splitSpritesheetsHeight );
             printf( "    Treating output filename as folder: %s\n", settings.outputFilename );
             settings.createStrip = false;
             settings.growWide = false;
@@ -160,6 +169,12 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
                 {
                     printf( "    Starting at bottom left\n" );
                 }
+            }
+            if( settings.extrude )
+            {
+                printf( "Extrude -> Enabled - disabling padding\n" );
+                // PackTextures will put both pixels on the right and bottom, so we'll shift by 1 pixel each way to center the image.
+                settings.padding = 2;
             }
             printf( "Min texture size -> %d\n", settings.minTextureSize );
             printf( "Max texture size -> %d\n", settings.maxTextureSize );
@@ -238,6 +253,7 @@ ImageBlockInfo* SplitSpriteSheets(SettingsStruct settings)
 {
     std::vector<std::string> fileList;
     listdir( &fileList, settings.inputDir, ".png" );
+    CreateDirectory( settings.outputFilename, 0 );
 
     int fileCount = fileList.size();
     if( fileList.size() == 0 )
@@ -269,25 +285,31 @@ ImageBlockInfo* SplitSpriteSheets(SettingsStruct settings)
     // Create the new images.
     for( int i=0; i<fileCount; i++ )
     {
-        unsigned int width = settings.splitSpritesheetsWidth;
-        unsigned int height = pImageInfo->pImages[i].h;
+        unsigned int spriteWidth = settings.splitSpritesheetsWidth;
+        unsigned int spriteHeight = settings.splitSpritesheetsHeight;
+        if( settings.splitSpritesheetsHeight == -1 )
+            spriteHeight = pImageInfo->pImages[i].h;
 
-        unsigned int numFrames = pImageInfo->pImages[i].w / settings.splitSpritesheetsWidth;
-        for( unsigned int frame=0; frame<numFrames; frame++ )
+        unsigned int numFramesX = pImageInfo->pImages[i].w / spriteWidth;
+        unsigned int numFramesY = pImageInfo->pImages[i].h / spriteHeight;
+        for( unsigned int frame=0; frame<numFramesX*numFramesY; frame++ )
         {
-            unsigned char* pNewImage = 0;
-            pNewImage = new unsigned char[width*height*4];
-            memset( pNewImage, 0, width*height*4 );
+            int frameX = frame % numFramesX;
+            int frameY = frame / numFramesX;
 
-            unsigned int x = settings.splitSpritesheetsWidth * frame;
-            unsigned int y = 0;
-            CopyImageChunk( pNewImage, width, height, &pImageInfo->pImages[i], x, y, width, height );
+            unsigned char* pNewImage = 0;
+            pNewImage = new unsigned char[spriteWidth*spriteHeight*4];
+            memset( pNewImage, 0, spriteWidth*spriteHeight*4 );
+
+            unsigned int x = spriteWidth * frameX;
+            unsigned int y = spriteHeight * frameY;
+            CopyImageChunk( pNewImage, spriteWidth, spriteHeight, &pImageInfo->pImages[i], x, y, spriteWidth, spriteHeight );
 
             char outputfile[PATH_MAX];
             char filenameWithoutExtension[PATH_MAX];
             strncpy_s( filenameWithoutExtension, pImageInfo->pImages[i].filename, strlen(pImageInfo->pImages[i].filename)-4 );
             sprintf_s( outputfile, 260, "%s/%s_%04d.png", settings.outputFilename, filenameWithoutExtension, frame+1 );
-            lodepng_encode32_file( outputfile, pNewImage, width, height );
+            lodepng_encode32_file( outputfile, pNewImage, spriteWidth, spriteHeight );
 
             delete[] pNewImage;
         }
@@ -350,7 +372,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
         }
         else
         {
-            done = PackTextures( pImageInfo->pImages, fileCount, sizeX, sizeY, settings.padding );
+            done = PackTextures( pImageInfo->pImages, fileCount, sizeX, sizeY, settings.padding, settings.extrude );
         }
 
         if( done == false )
@@ -388,7 +410,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
 
         for( int i=0; i<fileCount; i++ )
         {
-            CopyImageChunk( pNewImage, sizeX, sizeY, &pImageInfo->pImages[i] );
+            CopyImageChunk( pNewImage, sizeX, sizeY, &pImageInfo->pImages[i], 0, 0, 0, 0, settings.extrude );
         }
 
         char outputfile[PATH_MAX];
@@ -538,7 +560,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
     return pImageInfo;
 }
 
-bool PackTextures(ImageBlock* pImages, int fileCount, unsigned int textureWidth, unsigned int textureHeight, int padding)
+bool PackTextures(ImageBlock* pImages, int fileCount, unsigned int textureWidth, unsigned int textureHeight, int padding, bool extrude)
 {
     rbp::MaxRectsBinPack m_BinPack;
     m_BinPack.Init( textureWidth, textureHeight );
@@ -552,6 +574,15 @@ bool PackTextures(ImageBlock* pImages, int fileCount, unsigned int textureWidth,
         else
             pImages[i].binRect = m_BinPack.Insert( pImages[i].trimmedW+padding, pImages[i].trimmedH+padding, rbp::MaxRectsBinPack::RectContactPointRule );
         //float occupancy = m_BinPack.Occupancy();
+
+        if( extrude )
+        {
+            // When extrude is set, padding is set to 2 with both pixels on the right and bottom
+            // so we'll shift by 1 pixel each way to center the image in the rect.
+            assert( padding == 2 );
+            pImages[i].binRect.x += 1;
+            pImages[i].binRect.y += 1;
+        }
 
         if( pImages[i].binRect.width == 0 )
             return false;
@@ -632,12 +663,13 @@ bool PackTextures_SpriteStrip(ImageBlock* pImages, int fileCount, unsigned int t
     return true;
 }
 
-void CopyImageChunk(unsigned char* dest, unsigned int destWidth, unsigned int destHeight, ImageBlock* src, unsigned int startX, unsigned int startY, unsigned int widthToCopy, unsigned int heightToCopy)
+void CopyImageChunk(unsigned char* dest, unsigned int destWidth, unsigned int destHeight, ImageBlock* src, unsigned int startX, unsigned int startY, unsigned int widthToCopy, unsigned int heightToCopy, bool extrude)
 {
     unsigned int sourceOffsetX = startX;
     unsigned int sourceOffsetY = startY;
     unsigned int width = widthToCopy;
     unsigned int height = heightToCopy;
+
     if( width == 0 )
     {
         width = src->w;
@@ -659,6 +691,63 @@ void CopyImageChunk(unsigned char* dest, unsigned int destWidth, unsigned int de
             int destoffset = ((src->y+y)*destWidth + (src->x+x));
             int srcoffset = ((sourceOffsetY + y)*src->w + sourceOffsetX + x);
 
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+    }
+
+    if( extrude )
+    {
+        for( unsigned int y=0; y<height; y++ )
+        {
+            // Extrude left.
+            int destoffset = ((src->y+y)*destWidth + (src->x-1));
+            int srcoffset = ((sourceOffsetY + y)*src->w + sourceOffsetX);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        
+            // Extrude right.
+            destoffset = ((src->y+y)*destWidth + (src->x+width));
+            srcoffset = ((sourceOffsetY + y)*src->w + sourceOffsetX + width-1);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+
+        for( unsigned int x=0; x<width; x++ )
+        {
+            // Extrude top.
+            int destoffset = ((src->y-1)*destWidth + (src->x+x));
+            int srcoffset = ((sourceOffsetY)*src->w + sourceOffsetX + x);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        
+            // Extrude bottom.
+            destoffset = ((src->y+height)*destWidth + (src->x+x));
+            srcoffset = ((sourceOffsetY + height-1)*src->w + sourceOffsetX + x);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+
+        // Extrude top left.
+        {
+            int destoffset = ((src->y-1)*destWidth + (src->x-1));
+            int srcoffset = ((sourceOffsetY)*src->w + sourceOffsetX);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+
+        // Extrude top right.
+        {
+            int destoffset = ((src->y-1)*destWidth + (src->x+width));
+            int srcoffset = ((sourceOffsetY)*src->w + sourceOffsetX + width-1);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+
+        // Extrude bottom left.
+        {
+            int destoffset = ((src->y+height)*destWidth + (src->x-1));
+            int srcoffset = ((sourceOffsetY + height-1)*src->w + sourceOffsetX);
+            ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
+        }
+
+        // Extrude bottom right.
+        {
+            int destoffset = ((src->y+height)*destWidth + (src->x+width));
+            int srcoffset = ((sourceOffsetY + height-1)*src->w + sourceOffsetX + width-1);
             ((int*)dest)[destoffset] = ((int*)src->imageBuffer)[srcoffset];
         }
     }
