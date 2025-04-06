@@ -84,6 +84,7 @@ struct SettingsStruct
 {
     const char* inputDir = nullptr;
     const char* outputFilename = nullptr;
+    const char* extensionString = ".json";
     int padding = 0;
     bool extrude = false;
     bool trim = false;

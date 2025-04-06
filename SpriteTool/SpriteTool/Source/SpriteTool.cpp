@@ -34,6 +34,13 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             else
                 settings.outputFilename = argv[i+1];
         }
+        if( ( strcmp( argv[i], "-e" ) == 0 || strcmp( argv[i], "-extension" ) == 0 ) )
+        {
+            if( i+1 >= argc )
+                invalidArgs = true;
+            else
+                settings.extensionString = argv[i+1];
+        }
         if( ( strcmp( argv[i], "-p" ) == 0 || strcmp( argv[i], "-padding" ) == 0 ) )
         {
             if( i+1 >= argc )
@@ -105,6 +112,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
         printf( "\n" );
         printf( "[-i directory] or -input = relative or absolute path of input directory\n" );
         printf( "[-o name] or -output = output name without extension\n" );
+        printf( "[-e extension] or -extension = custom extension (include the .), default to .json\n" );
         printf( "[-p pixels] or -padding = padding between sprites in pixels - default is 0\n" );
         printf( "[-ex] or -extrude = extrude sprites by 1 pixel in each direction, will disable padding setting\n" );
         printf( "[-t minalpha] or -trim = enable trim with minimum alpha for trimming - specify alpha from 0 to 255\n" );
@@ -187,7 +195,7 @@ ImageBlockInfo* SpriteTool_ParseArgsAndCreateSpriteSheet(int argc, char** argv)
             if( settings.triangulate )
                 printf( "Triangulate -> Enabled\n" );
             else
-                printf( "Triangulate -> Disabled\n" );        
+                printf( "Triangulate -> Disabled\n" );
             if( settings.originAtBottomLeft )
                 printf( "Origin -> Bottom Left\n" );
             else
@@ -540,7 +548,7 @@ ImageBlockInfo* CreateSpriteSheet(SettingsStruct settings)
 
         //printf( "%s\n", jsonstr );
         char outputjsonfile[PATH_MAX];
-        sprintf_s( outputjsonfile, 260, "%s.json", settings.outputFilename );
+        sprintf_s( outputjsonfile, 260, "%s%s", settings.outputFilename, settings.extensionString );
         FILE* file;
 #if WIN32
         fopen_s( &file, outputjsonfile, "w" );
